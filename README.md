@@ -1,310 +1,94 @@
-Welcome to your new TanStack app! 
-
-# Getting Started
-
-To run this application:
-
-```bash
-npm install
-npm run start
-```
-
-# Building For Production
-
-To build this application for production:
-
-```bash
-npm run build
-```
-
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
-```bash
-npm run test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
-
-```bash
-npm run lint
-npm run format
-npm run check
-```
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
-
-```bash
-npm install @tanstack/react-query @tanstack/react-query-devtools
-```
-
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-npm install @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+# GeoMood Map+ — Clean Code project (Master Archi Logicielle)
+
+## Project intent (what we must deliver)
+- Map users’ moods by combining mood input, geolocation context, and real weather at the time of the mood.
+- Provide a minimal but working UI to collect data and visualize results (list/table/map).
+- Use external APIs (or mocks) for weather and geolocation; optional AI for text/image sentiment.
+- Follow course constraints: hexagonal architecture in final phase, clean code/SOLID, tests, CI, docs, CONTRIBUTIONS.md, PDF report.
+
+## Core flow (what the app does)
+- User captures a mood: free text + mood score (1–5) + optional image.
+- App retrieves precise place (name/type/coords) via geo API (or mock).
+- App retrieves real-time weather for that place/time via weather API (or mock).
+- MoodScore combines user input + sentiment signals + weather modifier (and optional image sentiment).
+- Data is stored locally (JSON/in-memory in Phase 1) and can be listed/exported.
+- UI shows the collected moods and highlights correlations (e.g., “calmer on rainy days in parks”).
+
+## Two-phase plan (course requirement)
+- Phase 1 (now): Proof of Concept, focus on TDD loops, make features work quickly; architecture can be rough.
+- Phase 2 (Dec refactor): Clean architecture (hexagonal), SOLID, proper layering, stronger tests, CI.
+
+## Phase 1 objective: TDD-first delivery with Vitest
+Goal: write tests first, make them pass with simplest code, then strengthen tests and refactor. Architecture can be minimal; prioritize learning loops.
+
+### Targeted behaviours to test in Phase 1
+- Mood entry accepts: free text, mood score (1–5), optional image URL/placeholder.
+- Geolocation fetch (real or mocked) returns location name/type and coordinates.
+- Weather fetch (real or mocked) returns main conditions (temp, humidity, rain flag).
+- MoodScore calculation combines:
+  - user text sentiment heuristic,
+  - numeric mood score,
+  - weather modifier (e.g., rainy/cold lowers, sunny/temperate raises),
+  - optional image sentiment stub.
+- Persistence stores entries locally (JSON or in-memory mock) and returns list.
+- Simple list view formatter surfaces combined data.
+
+### TDD loop to follow
+1) Write a small failing test for one behaviour (e.g., MoodScore calculator).  
+2) Implement the minimum code to pass.  
+3) Refactor lightly if needed; keep architecture simple for now.  
+4) Add a stronger/edge-case test; repeat the cycle.
+
+### Suggested initial test backlog (incremental)
+- `moodScore`:
+  - computes base from mood rating 1–5.
+  - applies text sentiment keywords (e.g., {happy:+1, sad:-1}).
+  - applies weather modifier (rain/cold vs sun/temperate).
+  - clamps between 0–100 (or defined range).
+- `geolocationService` (mock):
+  - returns structured data when given coordinates.
+  - handles missing API by returning fallback/mock.
+- `weatherService` (mock):
+  - returns structured data for given coords/time.
+  - handles failure with deterministic mock.
+- `persistence`:
+  - saves an entry and retrieves it.
+  - lists entries in insertion order.
+- `formatter`:
+  - renders a summary string/object combining mood, place, weather, score.
+
+### Minimal tech setup for tests
+- Test runner: Vitest.
+- Testing style: BDD (`describe/it`), expect API.
+- Mocks: use `vi.fn()` for adapters; keep pure functions for scoring logic.
+- Data builders: small factories per entity to avoid duplication in tests.
+
+## API options (recommended / mockable)
+- Weather: OpenWeatherMap or Tomorrow.io — temp, humidity, rain.
+- Geolocation: Google Geocoding or Places — place name, type (park, café, beach).
+- Image: Google Vision API — objects, emotions, luminosity (can be stubbed).
+- Text: Google Natural Language API — sentiment/keywords (can be stubbed).
+- Rule of thumb: if offline or rate-limited, return deterministic mock responses so tests remain stable.
+
+## Commands
+- Install deps: `npm install`
+- Run app: `npm run start`
+- Run tests (Vitest): `npm run test`
+- Build: `npm run build`
+- Lint: `npm run lint`
+- Format: `npm run format`
+- Check (lint+type+test if configured): `npm run check`
+- Add Shadcn UI components if needed: `pnpm dlx shadcn@latest add button`
+
+## Working agreements for Phase 1
+- Prefer mocks when APIs are unavailable; keep deterministic fixtures.
+- Keep code simple; postpone architecture purity to Phase 2.
+- Commit often with clear messages; keep CONTRIBUTIONS.md updated later.
+- Document assumptions directly in tests when behaviour is defined there.
+
+## Deliverables snapshot (later)
+- `/src` feature code (may be rough in Phase 1).
+- `/tests` or colocated tests with Vitest.
+- `/docs` + PDF summary (final).
+- `CONTRIBUTIONS.md` per contributor.
+- Optional `.github/workflows/ci.yml` for CI.
