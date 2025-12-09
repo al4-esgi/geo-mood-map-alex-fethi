@@ -12,7 +12,13 @@ export type GeoResponse = {
  * Resolves coordinates to a named place. Phase 1 can rely on deterministic
  * mock values to keep tests stable.
  */
-export async function getPlaceByCoords(_req: GeoRequest): Promise<GeoResponse> {
-  throw new Error('getPlaceByCoords not implemented yet');
+export async function getPlaceByCoords(req: GeoRequest): Promise<GeoResponse> {
+  return Promise.resolve({
+    lat: req.lat,
+    lon: req.lon,
+    name: 'Mock Place',
+    type: 'park',
+    source: 'mock',
+  });
 }
 
