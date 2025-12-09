@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { MoodCapture } from '../presentation/MoodCapture'
+import * as geoService from '../services/geolocationService'
+import * as weatherService from '../services/weatherService'
 
 describe('MoodCapture UI flow', () => {
   it('submits a mood and displays formatted summary with place and score', async () => {
@@ -46,6 +48,89 @@ describe('MoodCapture UI flow', () => {
       expect(items[0].textContent).toMatch(/first mood/)
       expect(items[1].textContent).toMatch(/second mood/)
     })
+  })
+
+  it('accepts manual coordinates and uses them when fetching place/weather', async () => {
+    const geoSpy = vi
+      .spyOn(geoService, 'getPlaceByCoords')
+      .mockResolvedValue({ lat: 40.0, lon: -74.0, name: 'NYC', type: 'city', source: 'mock' })
+    const weatherSpy = vi
+      .spyOn(weatherService, 'getWeatherByCoords')
+      .mockResolvedValue({ lat: 40.0, lon: -74.0, condition: 'sun', temperature: 25, source: 'mock' })
+
+    render(<MoodCapture initialCoords={{ lat: 40.0, lon: -74.0 }} />)
+
+    fireEvent.change(screen.getByLabelText(/Mood text/i), {
+      target: { value: 'custom coords' },
+    })
+    fireEvent.change(screen.getByLabelText(/Rating/i), {
+      target: { value: '4' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
+
+    const item = await screen.findByText(/NYC/)
+    expect(item).toBeDefined()
+    expect(geoSpy).toHaveBeenCalledWith({ lat: 40.0, lon: -74.0 })
+    expect(weatherSpy).toHaveBeenCalledWith({ lat: 40.0, lon: -74.0 })
+
+    geoSpy.mockRestore()
+    weatherSpy.mockRestore()
+  })
+
+  it('uses browser geolocation when "Use my location" is clicked', async () => {
+    const geoSpy = vi
+      .spyOn(geoService, 'getPlaceByCoords')
+      .mockResolvedValue({ lat: 10, lon: 20, name: 'GeoPlace', type: 'city', source: 'mock' })
+    const weatherSpy = vi
+      .spyOn(weatherService, 'getWeatherByCoords')
+      .mockResolvedValue({ lat: 10, lon: 20, condition: 'clouds', temperature: 19, source: 'mock' })
+
+    const geoMock = {
+      getCurrentPosition: (success: PositionCallback) =>
+        success({
+          coords: {
+            latitude: 10,
+            longitude: 20,
+            accuracy: 0,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+            toJSON() {
+              return this
+            },
+          },
+          timestamp: Date.now(),
+          toJSON() {
+            return this
+          },
+        }),
+    } as Geolocation
+    const originalGeo = navigator.geolocation
+    // @ts-expect-error allow override for test
+    navigator.geolocation = geoMock
+
+    render(<MoodCapture />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Use my location/i }))
+
+    fireEvent.change(screen.getByLabelText(/Mood text/i), {
+      target: { value: 'geo mood' },
+    })
+    fireEvent.change(screen.getByLabelText(/Rating/i), {
+      target: { value: '3' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
+
+    const item = await screen.findByText(/GeoPlace/)
+    expect(item).toBeDefined()
+    expect(geoSpy).toHaveBeenCalledWith({ lat: 10, lon: 20 })
+    expect(weatherSpy).toHaveBeenCalledWith({ lat: 10, lon: 20 })
+
+    geoSpy.mockRestore()
+    weatherSpy.mockRestore()
+    // @ts-expect-error restore
+    navigator.geolocation = originalGeo
   })
 })
 
