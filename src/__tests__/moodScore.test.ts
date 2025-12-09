@@ -70,5 +70,50 @@ describe('computeMoodScore', () => {
     })
     expect(score).toBe(55) // base 60 -5 humidity penalty
   })
+
+  it('combines rain penalty, humidity penalty, and positive text bonus', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      rating: 4,
+      text: 'happy and grateful',
+      weather: { condition: 'rain', temperature: 12, humidity: 95 },
+    })
+    // base 80 -20 rain -5 humidity +10 positive = 65
+    expect(score).toBe(65)
+  })
+
+  it('applies negative image sentiment penalty', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      rating: 4,
+      text: 'content',
+      weather: { condition: 'clouds', temperature: 20, humidity: 60 },
+      imageSentiment: 'negative',
+    })
+    // base 80 +0 text -0 weather -5 image = 75
+    expect(score).toBe(75)
+  })
+
+  it('combines extreme cold and rain penalties and clamps at 0 if needed', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      rating: 1,
+      text: '',
+      weather: { condition: 'rain', temperature: -2, humidity: 70 },
+    })
+    // base 20 -20 rain -10 cold = -10 -> clamp 0
+    expect(score).toBe(0)
+  })
+
+  it('combines heatwave and high humidity penalties with positive text', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      rating: 5,
+      text: 'joyful and excited',
+      weather: { condition: 'sun', temperature: 34, humidity: 90 },
+    })
+    // base 100 -10 heat -5 humidity +10 positive = 95
+    expect(score).toBe(95)
+  })
 })
 

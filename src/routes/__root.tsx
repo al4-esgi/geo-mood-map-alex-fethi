@@ -2,7 +2,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import Header from '../components/custom/_utils/Header'
+// import Header from '../components/custom/_utils/Header'
 
 import StoreDevtools from '../lib/demo-store-devtools'
 
@@ -17,7 +17,7 @@ interface MyRouterContext {
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: () => (
     <>
-      <Header />
+      {/* <Header /> */}
       <Outlet />
       <TanStackDevtools
         config={{
