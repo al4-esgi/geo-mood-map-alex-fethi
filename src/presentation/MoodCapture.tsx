@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 
 import { computeMoodScore } from '../mood/moodScore'
 import { createInMemoryMoodStore, type MoodEntry } from '../persistence/inMemoryMoodStore'
+import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
 import { formatMoodSummary } from './formatter'
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
@@ -14,10 +15,19 @@ function weatherLabel(weather: { condition: string; temperature: number }) {
 
 type MoodCaptureProps = {
   initialCoords?: { lat: number; lon: number };
+  persistence?: 'memory' | 'localStorage';
+  storageKey?: string;
 };
 
-export function MoodCapture({ initialCoords = defaultCoords }: MoodCaptureProps) {
-  const store = useMemo(() => createInMemoryMoodStore(), [])
+export function MoodCapture({
+  initialCoords = defaultCoords,
+  persistence = 'localStorage',
+  storageKey,
+}: MoodCaptureProps) {
+  const store = useMemo(() => {
+    if (persistence === 'localStorage') return createLocalStorageMoodStore(storageKey)
+    return createInMemoryMoodStore()
+  }, [persistence, storageKey])
   const [text, setText] = useState('')
   const [rating, setRating] = useState(3)
   const [imageUrl, setImageUrl] = useState('')

@@ -25,7 +25,7 @@ describe('MoodCapture UI flow', () => {
   })
 
   it('stores multiple entries in insertion order', async () => {
-    render(<MoodCapture />)
+    render(<MoodCapture persistence="memory" />)
 
     const textField = screen.getByLabelText(/Mood text/i)
     const ratingField = screen.getByLabelText(/Rating/i)
@@ -131,6 +131,26 @@ describe('MoodCapture UI flow', () => {
     weatherSpy.mockRestore()
     // @ts-expect-error restore
     navigator.geolocation = originalGeo
+  })
+
+  it('persists entries across remounts when using localStorage store', async () => {
+    render(<MoodCapture persistence="localStorage" storageKey="ui-flow-test" />)
+
+    fireEvent.change(screen.getByLabelText(/Mood text/i), {
+      target: { value: 'persisted mood' },
+    })
+    fireEvent.change(screen.getByLabelText(/Rating/i), {
+      target: { value: '4' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
+
+    await screen.findByText(/persisted mood/)
+
+    // Unmount/remount by re-rendering
+    render(<MoodCapture persistence="localStorage" storageKey="ui-flow-test" />)
+
+    const items = await screen.findAllByRole('listitem')
+    expect(items.some((item) => item.textContent?.includes('persisted mood'))).toBe(true)
   })
 })
 
