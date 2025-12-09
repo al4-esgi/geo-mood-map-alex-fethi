@@ -43,5 +43,32 @@ describe('computeMoodScore', () => {
     })
     expect(score).toBe(100)
   })
+
+  it('gives no text delta when sentiment is mixed (happy + sad)', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      text: 'happy but also a bit sad',
+      weather: { condition: 'clouds', temperature: 20, humidity: 50 },
+    })
+    expect(score).toBe(60)
+  })
+
+  it('penalizes heatwave temperatures', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      text: '',
+      weather: { condition: 'sun', temperature: 35, humidity: 40 },
+    })
+    expect(score).toBe(50) // base 60 -10 heat penalty
+  })
+
+  it('penalizes very high humidity slightly', () => {
+    const score = computeMoodScore({
+      ...baseInput,
+      text: '',
+      weather: { condition: 'clouds', temperature: 22, humidity: 90 },
+    })
+    expect(score).toBe(55) // base 60 -5 humidity penalty
+  })
 })
 

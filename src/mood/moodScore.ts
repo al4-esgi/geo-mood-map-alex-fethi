@@ -43,16 +43,24 @@ function textSentimentDelta(text?: string): number {
 
 function weatherModifier(weather?: WeatherSnapshot): number {
   if (!weather) return 0;
+  let delta = 0;
+
   const isRainy = weather.condition === 'rain';
   const isCold = weather.temperature < 8;
+  const isHeatWave = weather.temperature > 32;
   const isPleasantSun =
     (weather.condition === 'sun' || weather.condition === 'clear') &&
     weather.temperature >= 18 &&
     weather.temperature <= 28;
+  const isHumid = typeof weather.humidity === 'number' && weather.humidity > 85;
 
-  if (isRainy || isCold) return -20;
-  if (isPleasantSun) return 5;
-  return 0;
+  if (isRainy) delta -= 20;
+  if (isCold) delta -= 10;
+  if (isHeatWave) delta -= 10;
+  if (isPleasantSun) delta += 5;
+  if (isHumid) delta -= 5;
+
+  return delta;
 }
 
 function imageModifier(sentiment?: ImageSentiment): number {
