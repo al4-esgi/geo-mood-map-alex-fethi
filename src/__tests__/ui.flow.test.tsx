@@ -38,6 +38,7 @@ describe('MoodCapture UI flow', () => {
     fireEvent.change(ratingField, { target: { value: '3' } })
     fireEvent.click(submitBtn)
     await screen.findByText(/first mood/)
+    await waitFor(() => expect((submitBtn as HTMLButtonElement).disabled).toBe(false))
 
     // Second entry
     fireEvent.change(textField, { target: { value: 'second mood' } })
