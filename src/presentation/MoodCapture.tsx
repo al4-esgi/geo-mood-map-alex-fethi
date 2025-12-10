@@ -8,6 +8,8 @@ import CameraCapture from './CameraCapture'
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
 import { clearMoodStore, loadMoods, moodStore, saveMood, type MoodPersistence } from '../state/moodStore'
+import { analyzeText } from '../services/textAnalysisService'
+import { analyzeImage } from '../services/visionService'
 
 const defaultCoords = { lat: 48.8566, lon: 2.3522 } // Paris as deterministic fallback
 
@@ -91,10 +93,14 @@ export function MoodCapture({
     try {
       const place = await getPlaceByCoords(coords)
       const weather = await getWeatherByCoords(coords)
+      const textSentiment = text ? await analyzeText(text) : undefined
+      const vision = imageFileDataUrl ? await analyzeImage(imageFileDataUrl) : undefined
       const score = computeMoodScore({
         rating,
         text,
         weather,
+        textSentimentScore: textSentiment?.score,
+        imageSentimentScore: vision?.score,
       })
 
       await saveMood(persistence, {

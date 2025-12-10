@@ -11,6 +11,8 @@ export type MoodScoreInput = {
   text?: string;
   weather?: WeatherSnapshot;
   imageSentiment?: ImageSentiment;
+  textSentimentScore?: number; // -1..1 from NLP
+  imageSentimentScore?: number; // -1..1 from Vision
 };
 
 /**
@@ -19,14 +21,17 @@ export type MoodScoreInput = {
 export function computeMoodScore(input: MoodScoreInput): number {
   const base = clamp(input.rating * 20, 0, 100);
 
-  const sentimentDelta = textSentimentDelta(input.text);
+  const sentimentDelta = textSentimentDelta(input.text, input.textSentimentScore);
   const weatherDelta = weatherModifier(input.weather);
-  const imageDelta = imageModifier(input.imageSentiment);
+  const imageDelta = imageModifier(input.imageSentiment, input.imageSentimentScore);
 
   return clamp(base + sentimentDelta + weatherDelta + imageDelta, 0, 100);
 }
 
-function textSentimentDelta(text?: string): number {
+function textSentimentDelta(text?: string, aiScore?: number): number {
+  if (typeof aiScore === 'number') {
+    return clamp(aiScore, -1, 1) * 20;
+  }
   if (!text) return 0;
   const lower = text.toLowerCase();
   const positives = ['happy', 'joy', 'joyful', 'calm', 'peaceful'];
@@ -63,7 +68,10 @@ function weatherModifier(weather?: WeatherSnapshot): number {
   return delta;
 }
 
-function imageModifier(sentiment?: ImageSentiment): number {
+function imageModifier(sentiment?: ImageSentiment, aiScore?: number): number {
+  if (typeof aiScore === 'number') {
+    return clamp(aiScore, -1, 1) * 10;
+  }
   if (sentiment === 'positive') return 5;
   if (sentiment === 'negative') return -5;
   return 0;

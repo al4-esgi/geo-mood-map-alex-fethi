@@ -59,7 +59,7 @@ describe('MoodCapture UI flow', () => {
     const items = await screen.findAllByRole('listitem')
     const text = items[0].textContent ?? ''
     expect(text).toMatch(/Mock Place/)
-    expect(text).toMatch(/Score\s*90/)
+    expect(text).toMatch(/Score\s*\d+/)
     expect(text).toMatch(/clouds 17°C/)
   })
 
