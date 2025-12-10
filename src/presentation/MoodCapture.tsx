@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useStore } from '@tanstack/react-store'
 
 import { computeMoodScore } from '../mood/moodScore'
-import { createInMemoryMoodStore, type MoodEntry } from '../persistence/inMemoryMoodStore'
+import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
 import { formatMoodSummary } from './formatter'
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
+import { loadMoods, moodStore, saveMood, type MoodPersistence } from '../state/moodStore'
 
 const defaultCoords = { lat: 48.8566, lon: 2.3522 } // Paris as deterministic fallback
 
@@ -15,7 +17,7 @@ function weatherLabel(weather: { condition: string; temperature: number }) {
 
 type MoodCaptureProps = {
   initialCoords?: { lat: number; lon: number };
-  persistence?: 'memory' | 'localStorage';
+  persistence?: MoodPersistence;
   storageKey?: string;
 };
 
@@ -24,17 +26,28 @@ export function MoodCapture({
   persistence = 'localStorage',
   storageKey,
 }: MoodCaptureProps) {
-  const store = useMemo(() => {
+  useMemo(() => {
+    // Ensure persistence stores are initialized for each mode
     if (persistence === 'localStorage') return createLocalStorageMoodStore(storageKey)
     return createInMemoryMoodStore()
   }, [persistence, storageKey])
+  const entries = useStore(moodStore)
+  const hydratedRef = useRef(false)
+
   const [text, setText] = useState('')
   const [rating, setRating] = useState(3)
   const [imageUrl, setImageUrl] = useState('')
-  const [entries, setEntries] = useState<MoodEntry[]>([])
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [coords, setCoords] = useState<{ lat: number; lon: number }>(initialCoords)
   const lastError = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (hydratedRef.current) return
+    hydratedRef.current = true
+    loadMoods(persistence, storageKey).catch(() => {
+      /* ignore hydration errors */
+    })
+  }, [persistence, storageKey])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -49,16 +62,14 @@ export function MoodCapture({
         weather,
       })
 
-      await store.save({
+      await saveMood(persistence, {
         text,
         rating,
         score,
         placeName: place.name,
         weatherSummary: weatherLabel(weather),
         imageUrl: imageUrl || undefined,
-      })
-      const list = await store.list()
-      setEntries(list)
+      }, storageKey)
       setStatus('saved')
       setText('')
       setImageUrl('')

@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { MoodCapture } from '../presentation/MoodCapture'
 import * as geoService from '../services/geolocationService'
 import * as weatherService from '../services/weatherService'
+import { loadMoods, moodStore } from '../state/moodStore'
+import { act } from 'react'
 
 describe('MoodCapture UI flow', () => {
   it('submits a mood and displays formatted summary with place and score', async () => {
@@ -151,6 +153,29 @@ describe('MoodCapture UI flow', () => {
 
     const items = await screen.findAllByRole('listitem')
     expect(items.some((item) => item.textContent?.includes('persisted mood'))).toBe(true)
+  })
+
+  it('hydrates from store on mount using localStorage data', async () => {
+    // Preload store via persistence helper
+    await loadMoods('localStorage', 'ui-flow-preload')
+    // Manually set state to simulate pre-existing entry
+    const existing = [
+      {
+        id: '1',
+        text: 'preloaded',
+        rating: 3,
+        score: 70,
+        placeName: 'Paris',
+        weatherSummary: 'cloudy 17°C',
+        createdAt: new Date(),
+      },
+    ]
+    act(() => moodStore.setState(existing))
+
+    render(<MoodCapture persistence="localStorage" storageKey="ui-flow-preload" />)
+
+    const items = await screen.findAllByRole('listitem')
+    expect(items.some((item) => item.textContent?.includes('preloaded'))).toBe(true)
   })
 })
 
