@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 
 type Props = {
   onCapture: (dataUrl?: string) => void
+  resetSignal?: number
 }
 
-export function CameraCapture({ onCapture }: Props) {
+export function CameraCapture({ onCapture, resetSignal }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -35,6 +36,14 @@ export function CameraCapture({ onCapture }: Props) {
       stopCamera()
     }
   }, [active])
+
+  useEffect(() => {
+    // Reset preview and stop camera when parent requests
+    stopCamera()
+    setCaptured(null)
+    setActive(false)
+    setError(null)
+  }, [resetSignal])
 
   function stopCamera() {
     if (streamRef.current) {

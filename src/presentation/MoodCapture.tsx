@@ -40,6 +40,9 @@ export function MoodCapture({
   const [imageFileDataUrl, setImageFileDataUrl] = useState<string | undefined>(undefined)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [coords, setCoords] = useState<{ lat: number; lon: number }>(initialCoords)
+  const [locationStatus, setLocationStatus] = useState<'pending' | 'ready' | 'failed'>('pending')
+  const [toast, setToast] = useState<string | null>(null)
+  const [cameraReset, setCameraReset] = useState(0)
   const lastError = useRef<string | null>(null)
 
   useEffect(() => {
@@ -49,6 +52,32 @@ export function MoodCapture({
       /* ignore hydration errors */
     })
   }, [persistence, storageKey])
+
+  useEffect(() => {
+    requestLocation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function requestLocation() {
+    if (!navigator.geolocation) {
+      setLocationStatus('failed')
+      setToast('Geolocation not supported')
+      return
+    }
+    setLocationStatus('pending')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+        setLocationStatus('ready')
+      },
+      (err) => {
+        lastError.current = err.message
+        setLocationStatus('failed')
+        setToast('Failed to fetch location')
+        window.setTimeout(() => setToast(null), 3000)
+      },
+    )
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -76,46 +105,22 @@ export function MoodCapture({
       setText('')
       setImageUrl('')
       setImageFileDataUrl(undefined)
+      setCameraReset((n) => n + 1)
     } catch (err) {
       lastError.current = err instanceof Error ? err.message : 'Unknown error'
       setStatus('error')
     }
   }
 
-  function handleImageFileChange(file?: File) {
-    if (!file) {
-      setImageFileDataUrl(undefined)
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = () => {
-      setImageFileDataUrl(typeof reader.result === 'string' ? reader.result : undefined)
-    }
-    reader.readAsDataURL(file)
-  }
-
-  function handleUseMyLocation() {
-    if (!navigator.geolocation) {
-      lastError.current = 'Geolocation not supported'
-      setStatus('error')
-      return
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude })
-        setStatus('idle')
-      },
-      (err) => {
-        lastError.current = err.message
-        setStatus('error')
-      },
-    )
-  }
-
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
       <h1 className="text-2xl font-semibold">GeoMood Map — Quick Capture</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 border rounded-md p-4">
+      {toast && (
+        <div className="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow">
+          {toast}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="bg-white space-y-4 border rounded-md p-4">
         <div className="space-y-1">
           <label htmlFor="mood-text" className="block font-medium">
             Mood text
@@ -145,35 +150,11 @@ export function MoodCapture({
           />
         </div>
         <div className="space-y-1">
-          <label htmlFor="mood-image" className="block font-medium">
-            Image URL (optional)
-          </label>
-          <input
-            id="mood-image"
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full rounded border p-2"
-            placeholder="https://example.com/image.jpg"
-          />
-        </div>
-        <div className="space-y-1">
           <label htmlFor="mood-image-capture" className="block font-medium">
             Capture photo (uses device camera if available)
           </label>
-          <input
-            id="mood-image-capture"
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={(e) => handleImageFileChange(e.target.files?.[0])}
-            className="w-full rounded border p-2"
-          />
-          {imageFileDataUrl && <span className="text-sm text-green-700">Photo ready</span>}
-        </div>
-        <div className="space-y-2">
-          <div className="font-medium">Use device camera</div>
           <CameraCapture
+            resetSignal={cameraReset}
             onCapture={(dataUrl) => {
               setImageFileDataUrl(dataUrl)
               if (!dataUrl) {
@@ -182,51 +163,56 @@ export function MoodCapture({
             }}
           />
           {imageFileDataUrl && (
-            <div className="text-sm text-slate-700">
-              Captured photo stored as data URL (persists in store/localStorage)
+            <div className="flex flex-col">
+              <span className='text-green-600'>Photo ready</span>
+              <span className="text-slate-700">
+                Captured photo stored as data URL (persists in store/localStorage)
+              </span>
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label htmlFor="mood-lat" className="block font-medium">
-              Latitude
-            </label>
-            <input
-              id="mood-lat"
-              type="number"
-              step="0.0001"
-              value={coords.lat}
-              onChange={(e) => setCoords((c) => ({ ...c, lat: Number(e.target.value) }))}
-              className="w-full rounded border p-2"
-            />
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="mood-lon" className="block font-medium">
-              Longitude
-            </label>
-            <input
-              id="mood-lon"
-              type="number"
-              step="0.0001"
-              value={coords.lon}
-              onChange={(e) => setCoords((c) => ({ ...c, lon: Number(e.target.value) }))}
-              className="w-full rounded border p-2"
-            />
-          </div>
-        </div>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleUseMyLocation}
-            className="rounded border px-3 py-2 hover:bg-slate-100"
-            disabled={status === 'saving'}
-          >
-            Use my location
-          </button>
-          <span className="text-sm text-slate-600">
-            Using {coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}
+          <span className="text-sm text-slate-700 flex items-center gap-2">
+            Location: {coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}
+            {locationStatus === 'pending' && (
+              <>
+                <svg
+                  className="h-4 w-4 animate-spin text-slate-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  role="status"
+                  aria-label="Locating"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                <span>(detecting...)</span>
+              </>
+            )}
+            {locationStatus === 'failed' && <span>(using fallback)</span>}
           </span>
+          {locationStatus !== 'pending' && (
+            <button
+              type="button"
+              onClick={requestLocation}
+              className="rounded border px-3 py-2 hover:bg-slate-100"
+              disabled={status === 'saving'}
+            >
+              Refresh location
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <button

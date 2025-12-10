@@ -13,6 +13,35 @@ describe('MoodCapture UI flow', () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.clear()
     }
+    const originalGeo = navigator.geolocation
+    const geoMock = {
+      getCurrentPosition: (success: PositionCallback) =>
+        success({
+          coords: {
+            latitude: 48.8566,
+            longitude: 2.3522,
+            accuracy: 0,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+            toJSON() {
+              return this
+            },
+          },
+          timestamp: Date.now(),
+          toJSON() {
+            return this
+          },
+        }),
+    } as Geolocation
+    // @ts-expect-error override for tests
+    navigator.geolocation = geoMock
+
+    return () => {
+      // @ts-expect-error restore
+      navigator.geolocation = originalGeo
+    }
   })
 
   it('submits a mood and displays formatted summary with place and score', async () => {
@@ -61,34 +90,34 @@ describe('MoodCapture UI flow', () => {
     })
   })
 
-  it('accepts manual coordinates and uses them when fetching place/weather', async () => {
+  it('auto geolocation uses fetched coords when saving', async () => {
     const geoSpy = vi
       .spyOn(geoService, 'getPlaceByCoords')
-      .mockResolvedValue({ lat: 40.0, lon: -74.0, name: 'NYC', type: 'city', source: 'mock' })
+      .mockResolvedValue({ lat: 48.8566, lon: 2.3522, name: 'AutoPlace', type: 'city', source: 'mock' })
     const weatherSpy = vi
       .spyOn(weatherService, 'getWeatherByCoords')
-      .mockResolvedValue({ lat: 40.0, lon: -74.0, condition: 'sun', temperature: 25, source: 'mock' })
+      .mockResolvedValue({ lat: 48.8566, lon: 2.3522, condition: 'sun', temperature: 20, source: 'mock' })
 
-    render(<MoodCapture initialCoords={{ lat: 40.0, lon: -74.0 }} />)
+    render(<MoodCapture />)
 
     fireEvent.change(screen.getByLabelText(/Mood text/i), {
-      target: { value: 'custom coords' },
+      target: { value: 'auto coords' },
     })
     fireEvent.change(screen.getByLabelText(/Rating/i), {
       target: { value: '4' },
     })
     fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
 
-    const items = await screen.findAllByText(/NYC/)
-    expect(items.length).toBeGreaterThan(0)
-    expect(geoSpy).toHaveBeenCalledWith({ lat: 40.0, lon: -74.0 })
-    expect(weatherSpy).toHaveBeenCalledWith({ lat: 40.0, lon: -74.0 })
+    await waitFor(() => {
+      expect(geoSpy).toHaveBeenCalledWith({ lat: 48.8566, lon: 2.3522 })
+      expect(weatherSpy).toHaveBeenCalledWith({ lat: 48.8566, lon: 2.3522 })
+    })
 
     geoSpy.mockRestore()
     weatherSpy.mockRestore()
   })
 
-  it('uses browser geolocation when "Use my location" is clicked', async () => {
+  it('refresh location uses browser geolocation', async () => {
     const geoSpy = vi
       .spyOn(geoService, 'getPlaceByCoords')
       .mockResolvedValue({ lat: 10, lon: 20, name: 'GeoPlace', type: 'city', source: 'mock' })
@@ -123,7 +152,8 @@ describe('MoodCapture UI flow', () => {
 
     render(<MoodCapture />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Use my location/i }))
+    const refreshBtn = await screen.findByRole('button', { name: /Refresh location/i })
+    fireEvent.click(refreshBtn)
 
     fireEvent.change(screen.getByLabelText(/Mood text/i), {
       target: { value: 'geo mood' },
@@ -188,15 +218,29 @@ describe('MoodCapture UI flow', () => {
   })
 
   it('captures an image file and stores its data URL path in the list', async () => {
+    // Mock mediaDevices
+    // @ts-expect-error mock mediaDevices
+    navigator.mediaDevices = {
+      getUserMedia: vi.fn().mockResolvedValue({
+        getTracks: () => [{ stop: vi.fn() }],
+      }),
+    }
+    // Mock canvas context/toDataURL
+    const originalGetContext = HTMLCanvasElement.prototype.getContext
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+      drawImage: vi.fn(),
+      // minimal 2d context methods used
+    }) as any
+    const originalToDataUrl = HTMLCanvasElement.prototype.toDataURL
+    HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,test')
+    // Mock video play
+    const originalPlay = HTMLMediaElement.prototype.play
+    HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined)
+
     render(<MoodCapture persistence="localStorage" storageKey="photo-test" />)
 
-    const file = new File(['img'], 'photo.png', { type: 'image/png' })
-    const input = screen.getByLabelText(/Capture photo/i) as HTMLInputElement
-    await act(async () => {
-      fireEvent.change(input, { target: { files: [file] } })
-    })
-
-    await screen.findByText(/Photo ready/i)
+    fireEvent.click(screen.getByRole('button', { name: /Start camera/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Take photo/i }))
 
     fireEvent.change(screen.getByLabelText(/Mood text/i), {
       target: { value: 'with photo' },
@@ -212,6 +256,11 @@ describe('MoodCapture UI flow', () => {
     expect(text).toMatch(/with photo/)
     const dataImg = last?.querySelector('img[src^="data:image/png"]')
     expect(dataImg).toBeTruthy()
+
+    // restore mocks
+    HTMLCanvasElement.prototype.getContext = originalGetContext
+    HTMLCanvasElement.prototype.toDataURL = originalToDataUrl
+    HTMLMediaElement.prototype.play = originalPlay
   })
 })
 
