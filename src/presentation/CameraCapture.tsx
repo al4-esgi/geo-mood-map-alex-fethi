@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 type Props = {
   onCapture: (dataUrl?: string) => void
   resetSignal?: number
+  onClear?: () => void
 }
 
-export function CameraCapture({ onCapture, resetSignal }: Props) {
+export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -82,6 +83,15 @@ export function CameraCapture({ onCapture, resetSignal }: Props) {
     handleStart()
   }
 
+  function handleClear() {
+    stopCamera()
+    setCaptured(null)
+    setActive(false)
+    setError(null)
+    onCapture(undefined)
+    onClear?.()
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -101,6 +111,15 @@ export function CameraCapture({ onCapture, resetSignal }: Props) {
             onClick={handleRetake}
           >
             Retake photo
+          </button>
+        )}
+        {(captured || active) && (
+          <button
+            type="button"
+            className="rounded border px-3 py-2 hover:bg-slate-100"
+            onClick={handleClear}
+          >
+            Clear
           </button>
         )}
         {error && <span className="text-sm text-red-600">{error}</span>}

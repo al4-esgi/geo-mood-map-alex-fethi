@@ -7,7 +7,7 @@ import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStor
 import CameraCapture from './CameraCapture'
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
-import { loadMoods, moodStore, saveMood, type MoodPersistence } from '../state/moodStore'
+import { clearMoodStore, loadMoods, moodStore, saveMood, type MoodPersistence } from '../state/moodStore'
 
 const defaultCoords = { lat: 48.8566, lon: 2.3522 } // Paris as deterministic fallback
 
@@ -55,7 +55,6 @@ export function MoodCapture({
 
   useEffect(() => {
     requestLocation()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function requestLocation() {
@@ -77,6 +76,12 @@ export function MoodCapture({
         window.setTimeout(() => setToast(null), 3000)
       },
     )
+  }
+
+  function clearMoods() {
+    clearMoodStore(persistence, storageKey)
+    setToast('Recent moods cleared')
+    window.setTimeout(() => setToast(null), 2000)
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -161,6 +166,7 @@ export function MoodCapture({
                 setImageUrl('')
               }
             }}
+            onClear={() => setImageFileDataUrl(undefined)}
           />
           {imageFileDataUrl && (
             <div className="flex flex-col">
@@ -224,6 +230,14 @@ export function MoodCapture({
           </button>
           {status === 'saved' && <span role="status">Saved</span>}
           {status === 'error' && <span role="status">Error: {lastError.current}</span>}
+          <button
+            type="button"
+            onClick={clearMoods}
+            className="rounded border px-3 py-2 hover:bg-slate-100"
+            disabled={status === 'saving'}
+          >
+            Clear moods
+          </button>
         </div>
       </form>
 

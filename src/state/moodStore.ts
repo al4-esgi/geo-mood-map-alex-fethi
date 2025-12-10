@@ -9,9 +9,11 @@ import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStor
 
 export type MoodPersistence = 'memory' | 'localStorage'
 
+const DEFAULT_STORAGE_KEY = 'geomood.entries'
+
 export const moodStore = new Store<MoodEntry[]>([])
 
-const memoryStore = createInMemoryMoodStore()
+let memoryStore = createInMemoryMoodStore()
 const localStorageStores = new Map<string | undefined, MoodStore>()
 
 export async function loadMoods(persistence: MoodPersistence, storageKey?: string) {
@@ -26,10 +28,9 @@ export async function saveMood(
   storageKey?: string,
 ): Promise<MoodEntry[]> {
   const store = getPersistenceStore(persistence, storageKey)
-  await store.save(entry)
-  const list = await store.list()
-  moodStore.setState(list)
-  return list
+  const saved = await store.save(entry)
+  moodStore.setState(prev => [...prev, saved])
+  return moodStore.state
 }
 
 function getPersistenceStore(persistence: MoodPersistence, storageKey?: string) {
@@ -41,5 +42,18 @@ function getPersistenceStore(persistence: MoodPersistence, storageKey?: string) 
     return created
   }
   return memoryStore
+}
+
+export function clearMoodStore(persistence: MoodPersistence, storageKey?: string) {
+  const resolvedStorageKey = storageKey ?? DEFAULT_STORAGE_KEY
+  if (persistence === 'localStorage') {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(resolvedStorageKey)
+    }
+    localStorageStores.delete(storageKey)
+  } else {
+    memoryStore = createInMemoryMoodStore()
+  }
+  moodStore.setState([])
 }
 

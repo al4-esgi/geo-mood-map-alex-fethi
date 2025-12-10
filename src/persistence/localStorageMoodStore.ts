@@ -50,3 +50,7 @@ function persist(storageKey: string, entries: MoodEntry[]) {
   )
 }
 
+export function clearLocalStorageMoodStore(storageKey: string = DEFAULT_KEY) {
+  if (typeof localStorage === 'undefined') return
+  localStorage.removeItem(storageKey)
+}
