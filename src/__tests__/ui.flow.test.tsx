@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { MoodCapture } from '../presentation/MoodCapture'
 import * as geoService from '../services/geolocationService'
@@ -8,6 +8,13 @@ import { loadMoods, moodStore } from '../state/moodStore'
 import { act } from 'react'
 
 describe('MoodCapture UI flow', () => {
+  beforeEach(() => {
+    moodStore.setState([])
+    if (typeof localStorage !== 'undefined') {
+      localStorage.clear()
+    }
+  })
+
   it('submits a mood and displays formatted summary with place and score', async () => {
     render(<MoodCapture />)
 
@@ -20,10 +27,11 @@ describe('MoodCapture UI flow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
 
-    const item = await screen.findByText(/Mock Place/)
-    expect(item).toBeDefined()
-    expect(item.textContent).toMatch(/score=90/)
-    expect(item.textContent).toMatch(/clouds 17°C/)
+    const items = await screen.findAllByRole('listitem')
+    const text = items[0].textContent ?? ''
+    expect(text).toMatch(/Mock Place/)
+    expect(text).toMatch(/Score\s*90/)
+    expect(text).toMatch(/clouds 17°C/)
   })
 
   it('stores multiple entries in insertion order', async () => {
@@ -71,8 +79,8 @@ describe('MoodCapture UI flow', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
 
-    const item = await screen.findByText(/NYC/)
-    expect(item).toBeDefined()
+    const items = await screen.findAllByText(/NYC/)
+    expect(items.length).toBeGreaterThan(0)
     expect(geoSpy).toHaveBeenCalledWith({ lat: 40.0, lon: -74.0 })
     expect(weatherSpy).toHaveBeenCalledWith({ lat: 40.0, lon: -74.0 })
 
@@ -125,8 +133,8 @@ describe('MoodCapture UI flow', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
 
-    const item = await screen.findByText(/GeoPlace/)
-    expect(item).toBeDefined()
+    const items = await screen.findAllByText(/GeoPlace/)
+    expect(items.length).toBeGreaterThan(0)
     expect(geoSpy).toHaveBeenCalledWith({ lat: 10, lon: 20 })
     expect(weatherSpy).toHaveBeenCalledWith({ lat: 10, lon: 20 })
 
@@ -177,6 +185,33 @@ describe('MoodCapture UI flow', () => {
 
     const items = await screen.findAllByRole('listitem')
     expect(items.some((item) => item.textContent?.includes('preloaded'))).toBe(true)
+  })
+
+  it('captures an image file and stores its data URL path in the list', async () => {
+    render(<MoodCapture persistence="localStorage" storageKey="photo-test" />)
+
+    const file = new File(['img'], 'photo.png', { type: 'image/png' })
+    const input = screen.getByLabelText(/Capture photo/i) as HTMLInputElement
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } })
+    })
+
+    await screen.findByText(/Photo ready/i)
+
+    fireEvent.change(screen.getByLabelText(/Mood text/i), {
+      target: { value: 'with photo' },
+    })
+    fireEvent.change(screen.getByLabelText(/Rating/i), {
+      target: { value: '4' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Save mood/i }))
+
+    const items = await screen.findAllByRole('listitem')
+    const last = items[items.length - 1]
+    const text = last?.textContent ?? ''
+    expect(text).toMatch(/with photo/)
+    const dataImg = last?.querySelector('img[src^="data:image/png"]')
+    expect(dataImg).toBeTruthy()
   })
 })
 

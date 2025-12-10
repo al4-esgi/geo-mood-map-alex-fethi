@@ -4,7 +4,7 @@ import { useStore } from '@tanstack/react-store'
 import { computeMoodScore } from '../mood/moodScore'
 import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
-import { formatMoodSummary } from './formatter'
+import CameraCapture from './CameraCapture'
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
 import { loadMoods, moodStore, saveMood, type MoodPersistence } from '../state/moodStore'
@@ -37,6 +37,7 @@ export function MoodCapture({
   const [text, setText] = useState('')
   const [rating, setRating] = useState(3)
   const [imageUrl, setImageUrl] = useState('')
+  const [imageFileDataUrl, setImageFileDataUrl] = useState<string | undefined>(undefined)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [coords, setCoords] = useState<{ lat: number; lon: number }>(initialCoords)
   const lastError = useRef<string | null>(null)
@@ -68,15 +69,29 @@ export function MoodCapture({
         score,
         placeName: place.name,
         weatherSummary: weatherLabel(weather),
-        imageUrl: imageUrl || undefined,
+        weatherIcon: weather.icon,
+        imageUrl: imageFileDataUrl || imageUrl || undefined,
       }, storageKey)
       setStatus('saved')
       setText('')
       setImageUrl('')
+      setImageFileDataUrl(undefined)
     } catch (err) {
       lastError.current = err instanceof Error ? err.message : 'Unknown error'
       setStatus('error')
     }
+  }
+
+  function handleImageFileChange(file?: File) {
+    if (!file) {
+      setImageFileDataUrl(undefined)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      setImageFileDataUrl(typeof reader.result === 'string' ? reader.result : undefined)
+    }
+    reader.readAsDataURL(file)
   }
 
   function handleUseMyLocation() {
@@ -142,6 +157,36 @@ export function MoodCapture({
             placeholder="https://example.com/image.jpg"
           />
         </div>
+        <div className="space-y-1">
+          <label htmlFor="mood-image-capture" className="block font-medium">
+            Capture photo (uses device camera if available)
+          </label>
+          <input
+            id="mood-image-capture"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => handleImageFileChange(e.target.files?.[0])}
+            className="w-full rounded border p-2"
+          />
+          {imageFileDataUrl && <span className="text-sm text-green-700">Photo ready</span>}
+        </div>
+        <div className="space-y-2">
+          <div className="font-medium">Use device camera</div>
+          <CameraCapture
+            onCapture={(dataUrl) => {
+              setImageFileDataUrl(dataUrl)
+              if (!dataUrl) {
+                setImageUrl('')
+              }
+            }}
+          />
+          {imageFileDataUrl && (
+            <div className="text-sm text-slate-700">
+              Captured photo stored as data URL (persists in store/localStorage)
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <label htmlFor="mood-lat" className="block font-medium">
@@ -201,10 +246,40 @@ export function MoodCapture({
         {entries.length === 0 ? (
           <p>No entries yet.</p>
         ) : (
-          <ul className="space-y-2" aria-label="mood-list">
+          <ul className="space-y-3" aria-label="mood-list">
             {entries.map((entry) => (
-              <li key={entry.id} className="rounded border p-2">
-                {formatMoodSummary(entry)}
+              <li
+                key={entry.id}
+                className="rounded border p-3 shadow-sm bg-white flex gap-3 items-start"
+              >
+                {entry.imageUrl && (
+                  <img
+                    src={entry.imageUrl}
+                    alt="mood"
+                    className="h-16 w-16 rounded object-cover border"
+                  />
+                )}
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="font-semibold text-slate-900">{entry.placeName}</div>
+                    <div className="text-xs text-slate-500">
+                      {entry.createdAt.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-700">
+                    <span className="font-medium">Score {entry.score}</span>
+                    {entry.weatherIcon && (
+                      <img
+                        src={entry.weatherIcon}
+                        alt={entry.weatherSummary ?? 'weather icon'}
+                        className="h-6 w-6"
+                      />
+                    )}
+                    {entry.weatherSummary && <span>{entry.weatherSummary}</span>}
+                  </div>
+                  <div className="text-sm text-slate-800">{entry.text}</div>
+
+                </div>
               </li>
             ))}
           </ul>

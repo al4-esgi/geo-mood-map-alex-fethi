@@ -7,6 +7,7 @@ export type WeatherResponse = {
   temperature: number;
   humidity?: number;
   source: 'api' | 'mock';
+  icon?: string;
 };
 
 /**
@@ -35,12 +36,14 @@ export async function getWeatherByCoords(req: WeatherRequest): Promise<WeatherRe
 }
 
 type OpenWeatherResponse = {
-  weather: { main: string }[];
+  weather: { main: string; icon?: string }[];
   main: { temp: number; humidity?: number };
 };
 
 function mapOpenWeather(req: WeatherRequest, data: OpenWeatherResponse): WeatherResponse {
   const main = data.weather?.[0]?.main ?? 'Clear';
+  const iconCode = data.weather?.[0]?.icon;
+  const iconUrl = iconCode ? `https://openweathermap.org/img/wn/${iconCode}@2x.png` : undefined;
   return {
     lat: req.lat,
     lon: req.lon,
@@ -48,6 +51,7 @@ function mapOpenWeather(req: WeatherRequest, data: OpenWeatherResponse): Weather
     temperature: data.main?.temp ?? 0,
     humidity: data.main?.humidity,
     source: 'api',
+    icon: iconUrl,
   };
 }
 
@@ -68,6 +72,7 @@ function mockWeather(req: WeatherRequest): WeatherResponse {
     temperature: 17,
     humidity: 65,
     source: 'mock',
+    icon: 'https://openweathermap.org/img/wn/02d@2x.png',
   };
 }
 

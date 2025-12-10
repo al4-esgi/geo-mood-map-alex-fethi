@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
 import { createInMemoryMoodStore, type MoodEntryInput } from '../persistence/inMemoryMoodStore'
-import { formatMoodSummary } from '../presentation/formatter'
 
 const sample: MoodEntryInput = {
   text: 'Feeling calm',
@@ -23,20 +22,6 @@ describe('in-memory mood store', () => {
     expect(list[1].text).toBe('Second')
     expect(list[0].id).toBeDefined()
     expect(list[0].createdAt).toBeInstanceOf(Date)
-  })
-})
-
-describe('formatter', () => {
-  it('produces a readable summary containing place, score, and text', async () => {
-    const store = createInMemoryMoodStore()
-    const saved = await store.save(sample)
-
-    const summary = formatMoodSummary(saved)
-
-    expect(summary).toContain('Paris')
-    expect(summary).toContain('score=72')
-    expect(summary).toContain('Feeling calm')
-    expect(summary).toContain('cloudy 17°C')
   })
 })
 

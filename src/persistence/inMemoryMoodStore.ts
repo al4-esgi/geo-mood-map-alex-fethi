@@ -4,6 +4,7 @@ export type MoodEntryInput = {
   score: number;
   placeName: string;
   weatherSummary?: string;
+  weatherIcon?: string;
   imageUrl?: string;
   createdAt?: Date;
 };
