@@ -2,6 +2,8 @@
 
 @import 'tw-animate-css';
 
+@import 'leaflet/dist/leaflet.css';
+
 @custom-variant dark (&:is(.dark *));
 
 body {
@@ -135,4 +137,51 @@ code {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Leaflet custom styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.custom-mood-marker {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+  padding: 0;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  min-width: 200px;
+}
+
+/* Marker cluster styles */
+.custom-cluster-icon {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-cluster-anim .leaflet-marker-icon,
+.leaflet-cluster-anim .leaflet-marker-shadow {
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-in;
+}
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: rgba(102, 126, 234, 0.6);
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: rgba(102, 126, 234, 0.8);
 }

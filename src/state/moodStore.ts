@@ -1,22 +1,25 @@
 import { Store } from '@tanstack/store'
-import {
-  createInMemoryMoodStore,
-  type MoodEntry,
-  type MoodEntryInput,
-  type MoodStore,
-} from '../persistence/inMemoryMoodStore'
+import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
+import type {
+  MoodEntry,
+  MoodEntryInput,
+  MoodStore,
+} from '../persistence/inMemoryMoodStore'
 
 export type MoodPersistence = 'memory' | 'localStorage'
 
 const DEFAULT_STORAGE_KEY = 'geomood.entries'
 
-export const moodStore = new Store<MoodEntry[]>([])
+export const moodStore = new Store<Array<MoodEntry>>([])
 
 let memoryStore = createInMemoryMoodStore()
 const localStorageStores = new Map<string | undefined, MoodStore>()
 
-export async function loadMoods(persistence: MoodPersistence, storageKey?: string) {
+export async function loadMoods(
+  persistence: MoodPersistence,
+  storageKey?: string,
+) {
   const store = getPersistenceStore(persistence, storageKey)
   const list = await store.list()
   moodStore.setState(list)
@@ -26,14 +29,17 @@ export async function saveMood(
   persistence: MoodPersistence,
   entry: MoodEntryInput,
   storageKey?: string,
-): Promise<MoodEntry[]> {
+): Promise<Array<MoodEntry>> {
   const store = getPersistenceStore(persistence, storageKey)
   const saved = await store.save(entry)
-  moodStore.setState(prev => [...prev, saved])
+  moodStore.setState((prev) => [...prev, saved])
   return moodStore.state
 }
 
-function getPersistenceStore(persistence: MoodPersistence, storageKey?: string) {
+function getPersistenceStore(
+  persistence: MoodPersistence,
+  storageKey?: string,
+) {
   if (persistence === 'localStorage') {
     const cached = localStorageStores.get(storageKey)
     if (cached) return cached
@@ -44,7 +50,10 @@ function getPersistenceStore(persistence: MoodPersistence, storageKey?: string) 
   return memoryStore
 }
 
-export function clearMoodStore(persistence: MoodPersistence, storageKey?: string) {
+export function clearMoodStore(
+  persistence: MoodPersistence,
+  storageKey?: string,
+) {
   const resolvedStorageKey = storageKey ?? DEFAULT_STORAGE_KEY
   if (persistence === 'localStorage') {
     if (typeof localStorage !== 'undefined') {
@@ -56,4 +65,3 @@ export function clearMoodStore(persistence: MoodPersistence, storageKey?: string
   }
   moodStore.setState([])
 }
-

@@ -2,8 +2,10 @@ import type { MoodEntry, MoodEntryInput, MoodStore } from './inMemoryMoodStore'
 
 const DEFAULT_KEY = 'geomood.entries'
 
-export function createLocalStorageMoodStore(storageKey: string = DEFAULT_KEY): MoodStore {
-  let entries: MoodEntry[] = loadFromStorage(storageKey)
+export function createLocalStorageMoodStore(
+  storageKey: string = DEFAULT_KEY,
+): MoodStore {
+  let entries: Array<MoodEntry> = loadFromStorage(storageKey)
 
   return {
     async save(entry: MoodEntryInput) {
@@ -22,12 +24,12 @@ export function createLocalStorageMoodStore(storageKey: string = DEFAULT_KEY): M
   }
 }
 
-function loadFromStorage(storageKey: string): MoodEntry[] {
+function loadFromStorage(storageKey: string): Array<MoodEntry> {
   if (typeof localStorage === 'undefined') return []
   try {
     const raw = localStorage.getItem(storageKey)
     if (!raw) return []
-    const parsed = JSON.parse(raw) as MoodEntry[]
+    const parsed = JSON.parse(raw) as Array<MoodEntry>
     return parsed.map((e) => ({
       ...e,
       createdAt: new Date(e.createdAt),
@@ -37,7 +39,7 @@ function loadFromStorage(storageKey: string): MoodEntry[] {
   }
 }
 
-function persist(storageKey: string, entries: MoodEntry[]) {
+function persist(storageKey: string, entries: Array<MoodEntry>) {
   if (typeof localStorage === 'undefined') return
   localStorage.setItem(
     storageKey,
