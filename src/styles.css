@@ -134,6 +134,7 @@ code {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -184,4 +185,8 @@ code {
 .marker-cluster-medium div,
 .marker-cluster-large div {
   background-color: rgba(102, 126, 234, 0.8);
+}
+
+.bg-gradient-custom {
+  background: linear-gradient(to top left, #db2777, #ef4444, #f97316);
 }

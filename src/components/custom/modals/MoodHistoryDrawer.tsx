@@ -1,14 +1,8 @@
-import { History, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '../../ui/button'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '../../ui/drawer'
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../ui/drawer'
+import { useResponsive } from '@/lib/useResponsive'
+import { MoodDetailsCard } from '../_utils/MoodDetailsCard'
 
 interface MoodEntry {
   id: string
@@ -26,45 +20,62 @@ interface MoodEntry {
 interface MoodHistoryDrawerProps {
   entries: Array<MoodEntry>
   onMoodClick?: (entry: MoodEntry) => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function MoodHistoryDrawer({
   entries,
   onMoodClick,
+  open,
+  onOpenChange,
 }: MoodHistoryDrawerProps) {
+  const { isMobile } = useResponsive()
   const sortedEntries = [...entries].sort(
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
   )
-
-  const getMoodEmoji = (rating: number) => {
-    if (rating >= 5) return '😄'
-    if (rating >= 4) return '🙂'
-    if (rating >= 3) return '😐'
-    if (rating >= 2) return '😕'
-    return '😢'
-  }
+  const total = sortedEntries.length
+  const averageRating =
+    total === 0
+      ? 0
+      : Math.round(
+        (sortedEntries.reduce((acc, entry) => acc + entry.rating, 0) / total) *
+        10,
+      ) / 10
+  const averageScore =
+    total === 0
+      ? 0
+      : Math.round(
+        (sortedEntries.reduce((acc, entry) => acc + entry.score, 0) / total) *
+        10,
+      ) / 10
 
   return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Button
-          size="icon"
-          variant="outline"
-          className="fixed top-4 right-4 z-1000 bg-white shadow-lg hover:shadow-xl transition-shadow"
-          aria-label="Voir l'historique"
-        >
-          <History className="h-5 w-5" />
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="h-[85vh]">
-        <DrawerHeader className="border-b">
-          <div className="flex items-center justify-between">
-            <div>
+    <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? 'bottom' : 'right'}>
+      <DrawerContent className={`h-[${isMobile ? '85vh' : 'auto'}]`}>
+        <DrawerHeader className="border-b bg-gradient-custom/10">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
               <DrawerTitle>Historique des moods</DrawerTitle>
               <DrawerDescription>
                 {entries.length} mood{entries.length > 1 ? 's' : ''} enregistré
                 {entries.length > 1 ? 's' : ''}
               </DrawerDescription>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-gradient-custom px-3 py-1 font-semibold text-white shadow-sm">
+                  Note moyenne {averageRating}/5
+                </span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+                  Score moyen {averageScore}
+                </span>
+                <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                  Dernier: {sortedEntries[0]?.createdAt.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  }) || '--'}
+                </span>
+              </div>
             </div>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon">
@@ -91,77 +102,12 @@ export function MoodHistoryDrawer({
                 <div
                   key={entry.id}
                   onClick={() => onMoodClick?.(entry)}
-                  className={`rounded-lg border bg-card p-4 shadow-sm transition-all ${
-                    onMoodClick
-                      ? 'cursor-pointer hover:shadow-md hover:border-primary'
-                      : ''
-                  }`}
+                  className={`group overflow-hidden rounded-xl border bg-white/90 p-0 shadow-sm transition-all duration-200 ${onMoodClick
+                    ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/60'
+                    : ''
+                    }`}
                 >
-                  <div className="flex gap-3 items-start">
-                    {/* Emoji & Rating */}
-                    <div className="flex flex-col items-center gap-1 shrink-0">
-                      <div className="text-4xl">
-                        {getMoodEmoji(entry.rating)}
-                      </div>
-                      <div className="text-xs font-medium text-muted-foreground">
-                        {entry.rating}/5
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          <div className="font-semibold text-sm">
-                            {entry.placeName || 'Lieu inconnu'}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {entry.createdAt.toLocaleDateString('fr-FR', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                            })}{' '}
-                            à{' '}
-                            {entry.createdAt.toLocaleTimeString('fr-FR', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-medium text-primary">
-                          Score: {entry.score}
-                        </div>
-                      </div>
-
-                      {/* Weather */}
-                      {entry.weatherSummary && (
-                        <div className="flex items-center gap-2 mb-2">
-                          {entry.weatherIcon && (
-                            <img
-                              src={entry.weatherIcon}
-                              alt="weather"
-                              className="h-5 w-5"
-                            />
-                          )}
-                          <span className="text-xs text-muted-foreground">
-                            {entry.weatherSummary}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Text */}
-                      <p className="text-sm line-clamp-2 mb-2">{entry.text}</p>
-
-                      {/* Image */}
-                      {entry.imageUrl && (
-                        <img
-                          src={entry.imageUrl}
-                          alt="mood"
-                          className="w-full h-24 object-cover rounded border mt-2"
-                        />
-                      )}
-                    </div>
-                  </div>
+                  <MoodDetailsCard entry={entry} variant="list" className="p-4" />
                 </div>
               ))}
             </div>

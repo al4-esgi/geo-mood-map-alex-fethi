@@ -1,4 +1,4 @@
-import { Settings, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import {
   AlertDialog,
@@ -17,37 +17,32 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '../../ui/dialog'
 
 interface SettingsModalProps {
   moodCount: number
   onClearMoods: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function SettingsModal({ moodCount, onClearMoods }: SettingsModalProps) {
+export function SettingsModal({
+  moodCount,
+  onClearMoods,
+  open,
+  onOpenChange,
+}: SettingsModalProps) {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleDeleteConfirm = () => {
     onClearMoods()
     setShowDeleteAlert(false)
-    setSettingsOpen(false)
+    onOpenChange(false)
   }
 
   return (
     <>
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogTrigger asChild>
-          <Button
-            size="icon"
-            variant="outline"
-            className="fixed top-4 left-4 z-1000 bg-white shadow-lg hover:shadow-xl transition-shadow"
-            aria-label="Paramètres"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
-        </DialogTrigger>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Paramètres</DialogTitle>

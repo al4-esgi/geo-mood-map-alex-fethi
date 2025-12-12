@@ -1,5 +1,5 @@
 import { useStore } from '@tanstack/react-store'
-import { MapPin, Navigation } from 'lucide-react'
+import { History, LocateFixed, Settings, SmilePlus } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { MapView } from '../components/custom/MapView'
@@ -55,7 +55,10 @@ export function MoodMapPage({
   const [locationStatus, setLocationStatus] = useState<
     'pending' | 'ready' | 'failed'
   >('pending')
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAddMoodOpen, setIsAddMoodOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const [selectedMoodId, setSelectedMoodId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState<{
     message: string
@@ -139,7 +142,7 @@ export function MoodMapPage({
         storageKey,
       )
 
-      setIsModalOpen(false)
+      setIsAddMoodOpen(false)
       showToast('Mood enregistré avec succès !', 'success')
     } catch (err) {
       console.error('Error saving mood:', err)
@@ -163,6 +166,8 @@ export function MoodMapPage({
   const handleMoodClick = (entry: any) => {
     if (entry.coords) {
       setCoords({ lat: entry.coords[0], lon: entry.coords[1] })
+      setSelectedMoodId(entry.id)
+      setIsHistoryOpen(false)
     }
   }
 
@@ -171,54 +176,80 @@ export function MoodMapPage({
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[1200] px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-in slide-in-from-top ${
-            toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
-          }`}
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-1200 px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-in slide-in-from-top ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`}
         >
           {toast.message}
         </div>
       )}
-
-      {/* Settings Modal */}
-      <SettingsModal moodCount={entries.length} onClearMoods={clearMoods} />
-
-      {/* History Drawer */}
-      <MoodHistoryDrawer
-        entries={entriesWithCoords}
-        onMoodClick={handleMoodClick}
-      />
-
       {/* Map */}
       <MapView
         entries={entriesWithCoords}
         center={[coords.lat, coords.lon]}
         zoom={15}
+        selectedMoodId={selectedMoodId || undefined}
       />
 
       {/* Floating Buttons */}
-      <FloatingButton
-        icon={MapPin}
-        onClick={() => setIsModalOpen(true)}
-        label="Ajouter un mood"
-        position="bottom-right"
-        variant="primary"
-        size="lg"
+      <div className="fixed bottom-4 right-4 flex flex-col-reverse items-center gap-3 transform md:left-1/2 md:bottom-6 md:right-auto md:-translate-x-1/2 md:flex-row md:items-center md:gap-4">
+        <FloatingButton
+          icon={SmilePlus}
+          onClick={() => setIsAddMoodOpen(true)}
+          label="Ajouter un mood"
+          variant="gradient"
+          size="lg"
+          strategy="inline"
+        />
+
+        <FloatingButton
+          icon={LocateFixed}
+          onClick={requestLocation}
+          label="Centrer sur ma position"
+          variant="black"
+          size="lg"
+          strategy="inline"
+          className={locationStatus === 'pending' ? 'animate-pulse' : ''}
+        />
+
+        <FloatingButton
+          icon={History}
+          onClick={() => setIsHistoryOpen(true)}
+          label="Voir l'historique"
+          variant="black"
+          size="lg"
+          strategy="inline"
+        />
+
+        <FloatingButton
+          icon={Settings}
+          onClick={() => setIsSettingsOpen(true)}
+          label="Paramètres"
+          variant="black"
+          size="lg"
+          strategy="inline"
+        />
+      </div>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        moodCount={entries.length}
+        onClearMoods={clearMoods}
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
       />
 
-      <FloatingButton
-        icon={Navigation}
-        onClick={requestLocation}
-        label="Centrer sur ma position"
-        position="bottom-left"
-        variant="secondary"
-        size="md"
-        className={locationStatus === 'pending' ? 'animate-pulse' : ''}
+      {/* History Drawer */}
+      <MoodHistoryDrawer
+        entries={entriesWithCoords}
+        onMoodClick={handleMoodClick}
+        open={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
       />
 
       {/* Add Mood Modal */}
       <AddMoodModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        open={isAddMoodOpen}
+        onOpenChange={setIsAddMoodOpen}
         onSubmit={handleAddMood}
         isLoading={isLoading}
         coords={coords}

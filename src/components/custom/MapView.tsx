@@ -1,8 +1,10 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
+import { MoodDetailsCard } from './_utils/MoodDetailsCard'
+import type { Marker as LeafletMarker } from 'leaflet'
 
 // Fix for default marker icons in react-leaflet
 import iconRetina from 'leaflet/dist/images/marker-icon-2x.png'
@@ -91,7 +93,7 @@ function createClusterCustomIcon(cluster: any) {
     html: `<div style="
       width: 50px;
       height: 50px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(to top left, #db2777, #ef4444, #f97316);;
       border: 3px solid white;
       border-radius: 50%;
       display: flex;
@@ -111,6 +113,7 @@ interface MapViewProps {
   entries: Array<MoodEntry>
   center: [number, number]
   zoom?: number
+  selectedMoodId?: string
 }
 
 function MapUpdater({ center }: { center: [number, number] }) {
@@ -123,12 +126,27 @@ function MapUpdater({ center }: { center: [number, number] }) {
   return null
 }
 
-export function MapView({ entries, center, zoom = 13 }: MapViewProps) {
+export function MapView({ entries, center, zoom = 13, selectedMoodId }: MapViewProps) {
   const [isMounted, setIsMounted] = useState(false)
+  const markerRefs = useRef<Map<string, LeafletMarker>>(new Map())
+  const clusterGroupRef = useRef<any>(null)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!selectedMoodId) return
+    const marker = markerRefs.current.get(selectedMoodId)
+    if (!marker) return
+
+    const cluster = clusterGroupRef.current
+    if (cluster?.zoomToShowLayer) {
+      cluster.zoomToShowLayer(marker, () => marker.openPopup())
+    } else {
+      marker.openPopup()
+    }
+  }, [selectedMoodId])
 
   if (!isMounted) {
     return (
@@ -145,18 +163,21 @@ export function MapView({ entries, center, zoom = 13 }: MapViewProps) {
       className="h-full w-full"
       zoomControl={false}
       style={{ background: '#cbd5e1' }}
+      attributionControl={false}
     >
       <MapUpdater center={center} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.png"
       />
       <MarkerClusterGroup
+        ref={clusterGroupRef}
         chunkedLoading
         iconCreateFunction={createClusterCustomIcon}
         maxClusterRadius={60}
         spiderfyOnMaxZoom={true}
         showCoverageOnHover={false}
+        className='bg-gradient-custom'
       >
         {entries.map((entry) => {
           const coords: [number, number] = entry.coords || center
@@ -165,41 +186,19 @@ export function MapView({ entries, center, zoom = 13 }: MapViewProps) {
               key={entry.id}
               position={coords}
               icon={createMoodIcon(entry.rating)}
+              ref={(marker) => {
+                if (!marker) {
+                  markerRefs.current.delete(entry.id)
+                  return
+                }
+                markerRefs.current.set(entry.id, marker)
+                if (selectedMoodId === entry.id) {
+                  marker.openPopup()
+                }
+              }}
             >
-              <Popup maxWidth={300}>
-                <div className="space-y-2 p-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="font-semibold text-slate-900">
-                      {entry.placeName || 'Unknown location'}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      Rating: {entry.rating}/5 • Score: {entry.score}
-                    </div>
-                  </div>
-                  {entry.weatherSummary && (
-                    <div className="flex items-center gap-2 text-sm text-slate-700">
-                      {entry.weatherIcon && (
-                        <img
-                          src={entry.weatherIcon}
-                          alt="weather"
-                          className="h-6 w-6"
-                        />
-                      )}
-                      <span>{entry.weatherSummary}</span>
-                    </div>
-                  )}
-                  {entry.imageUrl && (
-                    <img
-                      src={entry.imageUrl}
-                      alt="mood"
-                      className="w-full h-32 object-cover rounded border"
-                    />
-                  )}
-                  <div className="text-sm text-slate-800">{entry.text}</div>
-                  <div className="text-xs text-slate-500">
-                    {entry.createdAt.toLocaleString()}
-                  </div>
-                </div>
+              <Popup maxWidth={520} className="m-4!">
+                <MoodDetailsCard entry={entry} variant="popup" />
               </Popup>
             </Marker>
           )

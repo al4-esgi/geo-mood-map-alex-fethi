@@ -7,9 +7,10 @@ interface FloatingButtonProps {
   onClick: () => void
   label?: string
   position?: 'top-right' | 'bottom-right' | 'bottom-left' | 'top-left'
-  variant?: 'primary' | 'secondary' | 'success' | 'danger'
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'white' | 'black' | 'gradient'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  strategy?: 'fixed' | 'inline'
 }
 
 const positionClasses = {
@@ -24,6 +25,9 @@ const variantClasses = {
   secondary: 'bg-slate-600 hover:bg-slate-700 text-white shadow-slate-500/50',
   success: 'bg-green-600 hover:bg-green-700 text-white shadow-green-500/50',
   danger: 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/50',
+  gradient: 'bg-gradient-custom text-white shadow-white/50',
+  white: 'bg-white hover:bg-gray-100 text-black shadow-white/50',
+  black: 'bg-black hover:bg-gray-800 text-white shadow-black/50',
 }
 
 const sizeClasses = {
@@ -46,15 +50,17 @@ export function FloatingButton({
   variant = 'primary',
   size = 'md',
   className,
+  strategy = 'fixed',
 }: FloatingButtonProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        'fixed z-1000 rounded-full shadow-lg transition-all duration-200',
+        'z-1000 rounded-full shadow-lg transition-all duration-200',
         'hover:scale-110 active:scale-95',
         'flex items-center justify-center',
-        positionClasses[position],
+        strategy === 'fixed' ? 'fixed' : '',
+        strategy === 'fixed' ? positionClasses[position] : '',
         variantClasses[variant],
         sizeClasses[size],
         className,
