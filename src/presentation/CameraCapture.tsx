@@ -1,3 +1,4 @@
+import { Camera, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 type Props = {
@@ -14,6 +15,7 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
   const [active, setActive] = useState(false)
   const [captured, setCaptured] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [resolution, setResolution] = useState<string | null>(null)
 
   useEffect(() => {
     if (!active) return
@@ -67,6 +69,7 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     const dataUrl = canvas.toDataURL('image/png')
     setCaptured(dataUrl)
+    setResolution(`${canvas.width}×${canvas.height}`)
     onCapture(dataUrl)
     stopCamera()
     setActive(false)
@@ -88,73 +91,110 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
     setCaptured(null)
     setActive(false)
     setError(null)
+    setResolution(null)
     onCapture(undefined)
     onClear?.()
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        {!active && !captured && (
-          <button
-            type="button"
-            className="rounded border px-3 py-2 hover:bg-slate-100"
-            onClick={handleStart}
+    <div className="space-y-4 rounded-2xl border bg-white/80 p-4 shadow-lg ring-1 ring-slate-200">
+      <div className={`flex items-center justify-between ${!active && !captured && !error ? 'm-0!' : ''}`}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={handleStart}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-custom text-white shadow-inner">
+            <Camera className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">Capture photo</p>
+            <p className="text-xs text-slate-600">Ajoute une image à ton mood</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {resolution && (
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+              {resolution}
+            </span>
+          )}
+          <span
+            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${active
+              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+              : captured
+                ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                : 'bg-slate-100 text-slate-700 ring-slate-200'
+              }`}
           >
-            Start camera
-          </button>
-        )}
+            <span
+              className={`h-2 w-2 rounded-full ${active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                }`}
+            />
+            {active ? 'Caméra active' : captured ? 'Capture prête' : 'En attente'}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
         {captured && (
           <button
             type="button"
-            className="rounded border px-3 py-2 hover:bg-slate-100"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800"
             onClick={handleRetake}
           >
-            Retake photo
+            <RefreshCw className="h-4 w-4" />
+            Reprendre
           </button>
         )}
         {(captured || active) && (
           <button
             type="button"
-            className="rounded border px-3 py-2 hover:bg-slate-100"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 transition hover:bg-slate-200"
             onClick={handleClear}
           >
-            Clear
+            <Trash2 className="h-4 w-4" />
+            Effacer
           </button>
         )}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
 
       {active && !captured && (
-        <div className="space-y-2">
-          <video
-            ref={videoRef}
-            className="w-full rounded border"
-            playsInline
-            muted
-            aria-label="camera-preview"
-          />
-          <div className="flex items-center gap-2">
+        <div className="space-y-3 rounded-xl border bg-slate-950/70 p-3 shadow-inner ring-1 ring-slate-800">
+          <div className="relative overflow-hidden rounded-lg ring-1 ring-white/10">
+            <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-white/5" />
+            <video
+              ref={videoRef}
+              className="aspect-4/3 w-full rounded-lg object-cover"
+              playsInline
+              muted
+              aria-label="camera-preview"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2 text-xs text-slate-200">
+            <span>Cadre ton sujet puis capture l’image.</span>
             <button
               type="button"
-              className="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-600"
               onClick={captureFrame}
             >
-              Take photo
+              <Camera className="h-4 w-4" />
+              Capturer
             </button>
-            <span className="text-sm text-slate-600">Captures save to store as data URL</span>
           </div>
           <canvas ref={canvasRef} className="hidden" />
         </div>
       )}
 
       {captured && (
-        <div className="space-y-2">
-          <img
-            src={captured}
-            alt="Captured preview"
-            className="w-full rounded border object-cover"
-          />
+        <div className="space-y-2 rounded-xl border bg-white/70 p-3 shadow-inner ring-1 ring-slate-200">
+          <div className="flex items-center justify-between text-xs text-slate-600">
+            <span>Prévisualisation</span>
+            {resolution && <span className="font-semibold text-slate-700">{resolution}</span>}
+          </div>
+          <div className="overflow-hidden rounded-lg ring-1 ring-slate-100 shadow">
+            <img
+              src={captured}
+              alt="Captured preview"
+              className="w-full object-cover"
+            />
+          </div>
         </div>
       )}
     </div>

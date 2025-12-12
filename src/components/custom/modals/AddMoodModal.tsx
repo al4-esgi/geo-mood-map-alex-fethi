@@ -2,11 +2,11 @@ import { useState } from 'react'
 import CameraCapture from '../../../presentation/CameraCapture'
 import { Button } from '../../ui/button'
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from '../../ui/dialog'
 import { Label } from '../../ui/label'
 import { Textarea } from '../../ui/textarea'
@@ -74,11 +74,10 @@ export function AddMoodModal({
                   key={mood.rating}
                   type="button"
                   onClick={() => setRating(mood.rating)}
-                  className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
-                    rating === mood.rating
+                  className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${rating === mood.rating
                       ? 'border-blue-600 bg-blue-50 scale-110'
                       : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
+                    }`}
                   title={mood.label}
                 >
                   <span className="text-3xl">{mood.emoji}</span>
@@ -144,7 +143,7 @@ export function AddMoodModal({
             <Button
               type="submit"
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 bg-gradient-custom"
             >
               {isLoading ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
