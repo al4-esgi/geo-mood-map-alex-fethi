@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  
-  createInMemoryMoodStore
-} from '../persistence/inMemoryMoodStore'
-import type {MoodEntryInput} from '../persistence/inMemoryMoodStore';
+import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
+import type { MoodEntryInput } from '../persistence/inMemoryMoodStore'
 
 const sample: MoodEntryInput = {
   text: 'Feeling calm',

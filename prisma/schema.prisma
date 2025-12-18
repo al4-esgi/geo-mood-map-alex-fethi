@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Mood {
+  id                  String   @id @default(cuid())
+  text                String
+  rating              Int
+  score               Int
+  placeName           String
+  weatherSummary      String?
+  weatherIcon         String?
+  imageUrl            String?
+  textSentimentScore  Float?
+  imageSentimentScore Float?
+  createdAt           DateTime @default(now())
+}

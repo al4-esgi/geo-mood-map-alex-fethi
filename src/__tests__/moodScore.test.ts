@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import {  computeMoodScore } from '../mood/moodScore'
-import type {MoodScoreInput} from '../mood/moodScore';
+import { computeMoodScore } from '../mood/moodScore'
+import type { MoodScoreInput } from '../mood/moodScore'
 
 const baseInput: MoodScoreInput = {
   rating: 3,

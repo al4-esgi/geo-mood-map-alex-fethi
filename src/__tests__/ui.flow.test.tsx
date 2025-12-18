@@ -93,15 +93,13 @@ describe('MoodCapture UI flow', () => {
   })
 
   it('auto geolocation uses fetched coords when saving', async () => {
-    const geoSpy = vi
-      .spyOn(geoService, 'getPlaceByCoords')
-      .mockResolvedValue({
-        lat: 48.8566,
-        lon: 2.3522,
-        name: 'AutoPlace',
-        type: 'city',
-        source: 'mock',
-      })
+    const geoSpy = vi.spyOn(geoService, 'getPlaceByCoords').mockResolvedValue({
+      lat: 48.8566,
+      lon: 2.3522,
+      name: 'AutoPlace',
+      type: 'city',
+      source: 'mock',
+    })
     const weatherSpy = vi
       .spyOn(weatherService, 'getWeatherByCoords')
       .mockResolvedValue({
@@ -132,15 +130,13 @@ describe('MoodCapture UI flow', () => {
   })
 
   it('refresh location uses browser geolocation', async () => {
-    const geoSpy = vi
-      .spyOn(geoService, 'getPlaceByCoords')
-      .mockResolvedValue({
-        lat: 10,
-        lon: 20,
-        name: 'GeoPlace',
-        type: 'city',
-        source: 'mock',
-      })
+    const geoSpy = vi.spyOn(geoService, 'getPlaceByCoords').mockResolvedValue({
+      lat: 10,
+      lon: 20,
+      name: 'GeoPlace',
+      type: 'city',
+      source: 'mock',
+    })
     const weatherSpy = vi
       .spyOn(weatherService, 'getWeatherByCoords')
       .mockResolvedValue({
@@ -275,8 +271,10 @@ describe('MoodCapture UI flow', () => {
 
     render(<MoodCapture persistence="localStorage" storageKey="photo-test" />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Start camera/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Take photo/i }))
+    // Start camera via the clickable capture tile
+    fireEvent.click(screen.getByText(/Capture photo/i, { selector: 'p' }))
+    const captureBtn = await screen.findByRole('button', { name: /Capturer/i })
+    fireEvent.click(captureBtn)
 
     fireEvent.change(screen.getByLabelText(/Mood text/i), {
       target: { value: 'with photo' },
