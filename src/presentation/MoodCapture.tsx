@@ -7,16 +7,15 @@ import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStor
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
 import {
-  
   clearMoodStore,
   loadMoods,
   moodStore,
-  saveMood
+  saveMood,
 } from '../state/moodStore'
 import { analyzeText } from '../services/textAnalysisService'
 import { analyzeImage } from '../services/visionService'
 import CameraCapture from './CameraCapture'
-import type {MoodPersistence} from '../state/moodStore';
+import type { MoodPersistence } from '../state/moodStore'
 
 const defaultCoords = { lat: 48.8566, lon: 2.3522 } // Paris as deterministic fallback
 
