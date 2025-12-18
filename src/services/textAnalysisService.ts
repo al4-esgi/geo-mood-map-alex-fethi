@@ -1,8 +1,8 @@
 export type TextAnalysisResult = {
-  score: number; // -1..1
-  magnitude?: number;
-  source: 'api' | 'mock';
-};
+  score: number // -1..1
+  magnitude?: number
+  source: 'api' | 'mock'
+}
 
 const NLP_ENDPOINT =
   'https://language.googleapis.com/v1/documents:analyzeSentiment?key='
@@ -31,7 +31,11 @@ export async function analyzeText(text: string): Promise<TextAnalysisResult> {
       documentSentiment?: { score?: number; magnitude?: number }
     }
     const score = clamp(data.documentSentiment?.score ?? 0, -1, 1)
-    return { score, magnitude: data.documentSentiment?.magnitude, source: 'api' }
+    return {
+      score,
+      magnitude: data.documentSentiment?.magnitude,
+      source: 'api',
+    }
   } catch {
     return mockTextAnalysis(text)
   }
@@ -39,12 +43,13 @@ export async function analyzeText(text: string): Promise<TextAnalysisResult> {
 
 function mockTextAnalysis(text: string): TextAnalysisResult {
   const lower = text.toLowerCase()
-  if (lower.includes('happy') || lower.includes('joy')) return { score: 0.6, source: 'mock' }
-  if (lower.includes('sad') || lower.includes('angry')) return { score: -0.6, source: 'mock' }
+  if (lower.includes('happy') || lower.includes('joy'))
+    return { score: 0.6, source: 'mock' }
+  if (lower.includes('sad') || lower.includes('angry'))
+    return { score: -0.6, source: 'mock' }
   return { score: 0, source: 'mock' }
 }
 
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n))
 }
-

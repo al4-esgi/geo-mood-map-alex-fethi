@@ -1,49 +1,57 @@
-export type WeatherRequest = { lat: number; lon: number; when?: Date };
+export type WeatherRequest = { lat: number; lon: number; when?: Date }
 
 export type WeatherResponse = {
-  lat: number;
-  lon: number;
-  condition: 'sun' | 'clouds' | 'rain' | 'snow' | 'clear';
-  temperature: number;
-  humidity?: number;
-  source: 'api' | 'mock';
-  icon?: string;
-};
+  lat: number
+  lon: number
+  condition: 'sun' | 'clouds' | 'rain' | 'snow' | 'clear'
+  temperature: number
+  humidity?: number
+  source: 'api' | 'mock'
+  icon?: string
+}
 
 /**
  * Retrieves weather for given coordinates. Phase 1 uses a deterministic mock
  * unless real API integration is added. Behaviour will be defined by tests.
  */
-export async function getWeatherByCoords(req: WeatherRequest): Promise<WeatherResponse> {
-  const isTestEnv = import.meta.env.MODE === 'test' || import.meta.env.NODE_ENV === 'test';
-  const isFetchMocked = typeof (fetch as any)?.mock === 'object';
-  if (isTestEnv && !isFetchMocked) return mockWeather(req);
+export async function getWeatherByCoords(
+  req: WeatherRequest,
+): Promise<WeatherResponse> {
+  const isTestEnv =
+    import.meta.env.MODE === 'test' || import.meta.env.NODE_ENV === 'test'
+  const isFetchMocked = typeof (fetch as any)?.mock === 'object'
+  if (isTestEnv && !isFetchMocked) return mockWeather(req)
 
-  const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-  if (!apiKey) return mockWeather(req);
+  const apiKey = import.meta.env.VITE_WEATHER_API_KEY
+  if (!apiKey) return mockWeather(req)
 
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${req.lat}&lon=${req.lon}&units=metric&appid=${apiKey}`;
-    const res = await fetch(url);
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${req.lat}&lon=${req.lon}&units=metric&appid=${apiKey}`
+    const res = await fetch(url)
     if (!res.ok) {
-      return mockWeather(req);
+      return mockWeather(req)
     }
-    const data = (await res.json()) as OpenWeatherResponse;
-    return mapOpenWeather(req, data);
+    const data = (await res.json()) as OpenWeatherResponse
+    return mapOpenWeather(req, data)
   } catch {
-    return mockWeather(req);
+    return mockWeather(req)
   }
 }
 
 type OpenWeatherResponse = {
-  weather: { main: string; icon?: string }[];
-  main: { temp: number; humidity?: number };
-};
+  weather: Array<{ main: string; icon?: string }>
+  main: { temp: number; humidity?: number }
+}
 
-function mapOpenWeather(req: WeatherRequest, data: OpenWeatherResponse): WeatherResponse {
-  const main = data.weather?.[0]?.main ?? 'Clear';
-  const iconCode = data.weather?.[0]?.icon;
-  const iconUrl = iconCode ? `https://openweathermap.org/img/wn/${iconCode}@2x.png` : undefined;
+function mapOpenWeather(
+  req: WeatherRequest,
+  data: OpenWeatherResponse,
+): WeatherResponse {
+  const main = data.weather?.[0]?.main ?? 'Clear'
+  const iconCode = data.weather?.[0]?.icon
+  const iconUrl = iconCode
+    ? `https://openweathermap.org/img/wn/${iconCode}@2x.png`
+    : undefined
   return {
     lat: req.lat,
     lon: req.lon,
@@ -52,16 +60,21 @@ function mapOpenWeather(req: WeatherRequest, data: OpenWeatherResponse): Weather
     humidity: data.main?.humidity,
     source: 'api',
     icon: iconUrl,
-  };
+  }
 }
 
 function mapCondition(main: string): WeatherResponse['condition'] {
-  const normalized = main.toLowerCase();
-  if (normalized.includes('rain') || normalized.includes('drizzle') || normalized.includes('thunderstorm')) return 'rain';
-  if (normalized.includes('snow')) return 'snow';
-  if (normalized.includes('cloud')) return 'clouds';
-  if (normalized.includes('clear')) return 'sun';
-  return 'clear';
+  const normalized = main.toLowerCase()
+  if (
+    normalized.includes('rain') ||
+    normalized.includes('drizzle') ||
+    normalized.includes('thunderstorm')
+  )
+    return 'rain'
+  if (normalized.includes('snow')) return 'snow'
+  if (normalized.includes('cloud')) return 'clouds'
+  if (normalized.includes('clear')) return 'sun'
+  return 'clear'
 }
 
 function mockWeather(req: WeatherRequest): WeatherResponse {
@@ -73,6 +86,5 @@ function mockWeather(req: WeatherRequest): WeatherResponse {
     humidity: 65,
     source: 'mock',
     icon: 'https://openweathermap.org/img/wn/02d@2x.png',
-  };
+  }
 }
-

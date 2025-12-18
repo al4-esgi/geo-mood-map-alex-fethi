@@ -10,15 +10,13 @@ describe('weatherService', () => {
   })
 
   it('maps OpenWeather response to internal shape', async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          weather: [{ main: 'Rain' }],
-          main: { temp: 12, humidity: 80 },
-        }),
-      } as Response)
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        weather: [{ main: 'Rain' }],
+        main: { temp: 12, humidity: 80 },
+      }),
+    } as Response)
 
     // Stub API key
     const originalEnv = import.meta.env
@@ -39,4 +37,3 @@ describe('weatherService', () => {
     import.meta.env = originalEnv
   })
 })
-

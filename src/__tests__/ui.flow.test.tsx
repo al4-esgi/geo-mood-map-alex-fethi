@@ -1,11 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { act } from 'react'
 import { MoodCapture } from '../presentation/MoodCapture'
 import * as geoService from '../services/geolocationService'
 import * as weatherService from '../services/weatherService'
 import { loadMoods, moodStore } from '../state/moodStore'
-import { act } from 'react'
 
 describe('MoodCapture UI flow', () => {
   beforeEach(() => {
@@ -75,7 +75,9 @@ describe('MoodCapture UI flow', () => {
     fireEvent.change(ratingField, { target: { value: '3' } })
     fireEvent.click(submitBtn)
     await screen.findByText(/first mood/)
-    await waitFor(() => expect((submitBtn as HTMLButtonElement).disabled).toBe(false))
+    await waitFor(() =>
+      expect((submitBtn as HTMLButtonElement).disabled).toBe(false),
+    )
 
     // Second entry
     fireEvent.change(textField, { target: { value: 'second mood' } })
@@ -93,10 +95,22 @@ describe('MoodCapture UI flow', () => {
   it('auto geolocation uses fetched coords when saving', async () => {
     const geoSpy = vi
       .spyOn(geoService, 'getPlaceByCoords')
-      .mockResolvedValue({ lat: 48.8566, lon: 2.3522, name: 'AutoPlace', type: 'city', source: 'mock' })
+      .mockResolvedValue({
+        lat: 48.8566,
+        lon: 2.3522,
+        name: 'AutoPlace',
+        type: 'city',
+        source: 'mock',
+      })
     const weatherSpy = vi
       .spyOn(weatherService, 'getWeatherByCoords')
-      .mockResolvedValue({ lat: 48.8566, lon: 2.3522, condition: 'sun', temperature: 20, source: 'mock' })
+      .mockResolvedValue({
+        lat: 48.8566,
+        lon: 2.3522,
+        condition: 'sun',
+        temperature: 20,
+        source: 'mock',
+      })
 
     render(<MoodCapture />)
 
@@ -120,10 +134,22 @@ describe('MoodCapture UI flow', () => {
   it('refresh location uses browser geolocation', async () => {
     const geoSpy = vi
       .spyOn(geoService, 'getPlaceByCoords')
-      .mockResolvedValue({ lat: 10, lon: 20, name: 'GeoPlace', type: 'city', source: 'mock' })
+      .mockResolvedValue({
+        lat: 10,
+        lon: 20,
+        name: 'GeoPlace',
+        type: 'city',
+        source: 'mock',
+      })
     const weatherSpy = vi
       .spyOn(weatherService, 'getWeatherByCoords')
-      .mockResolvedValue({ lat: 10, lon: 20, condition: 'clouds', temperature: 19, source: 'mock' })
+      .mockResolvedValue({
+        lat: 10,
+        lon: 20,
+        condition: 'clouds',
+        temperature: 19,
+        source: 'mock',
+      })
 
     const geoMock = {
       getCurrentPosition: (success: PositionCallback) =>
@@ -152,7 +178,9 @@ describe('MoodCapture UI flow', () => {
 
     render(<MoodCapture />)
 
-    const refreshBtn = await screen.findByRole('button', { name: /Refresh location/i })
+    const refreshBtn = await screen.findByRole('button', {
+      name: /Refresh location/i,
+    })
     fireEvent.click(refreshBtn)
 
     fireEvent.change(screen.getByLabelText(/Mood text/i), {
@@ -191,7 +219,9 @@ describe('MoodCapture UI flow', () => {
     render(<MoodCapture persistence="localStorage" storageKey="ui-flow-test" />)
 
     const items = await screen.findAllByRole('listitem')
-    expect(items.some((item) => item.textContent?.includes('persisted mood'))).toBe(true)
+    expect(
+      items.some((item) => item.textContent?.includes('persisted mood')),
+    ).toBe(true)
   })
 
   it('hydrates from store on mount using localStorage data', async () => {
@@ -211,10 +241,14 @@ describe('MoodCapture UI flow', () => {
     ]
     act(() => moodStore.setState(existing))
 
-    render(<MoodCapture persistence="localStorage" storageKey="ui-flow-preload" />)
+    render(
+      <MoodCapture persistence="localStorage" storageKey="ui-flow-preload" />,
+    )
 
     const items = await screen.findAllByRole('listitem')
-    expect(items.some((item) => item.textContent?.includes('preloaded'))).toBe(true)
+    expect(items.some((item) => item.textContent?.includes('preloaded'))).toBe(
+      true,
+    )
   })
 
   it('captures an image file and stores its data URL path in the list', async () => {
@@ -232,7 +266,9 @@ describe('MoodCapture UI flow', () => {
       // minimal 2d context methods used
     }) as any
     const originalToDataUrl = HTMLCanvasElement.prototype.toDataURL
-    HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,test')
+    HTMLCanvasElement.prototype.toDataURL = vi
+      .fn()
+      .mockReturnValue('data:image/png;base64,test')
     // Mock video play
     const originalPlay = HTMLMediaElement.prototype.play
     HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined)
@@ -263,4 +299,3 @@ describe('MoodCapture UI flow', () => {
     HTMLMediaElement.prototype.play = originalPlay
   })
 })
-

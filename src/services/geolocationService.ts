@@ -1,19 +1,20 @@
-export type GeoRequest = { lat: number; lon: number };
+export type GeoRequest = { lat: number; lon: number }
 
 export type GeoResponse = {
-  lat: number;
-  lon: number;
-  name: string;
-  type: 'park' | 'cafe' | 'beach' | 'city' | 'unknown';
-  source: 'api' | 'mock';
-};
+  lat: number
+  lon: number
+  name: string
+  type: 'park' | 'cafe' | 'beach' | 'city' | 'unknown'
+  source: 'api' | 'mock'
+}
 
 /**
  * Resolves coordinates to a named place. Phase 1 can rely on deterministic
  * mock values to keep tests stable.
  */
 export async function getPlaceByCoords(req: GeoRequest): Promise<GeoResponse> {
-  const isTestEnv = import.meta.env.MODE === 'test' || import.meta.env.NODE_ENV === 'test'
+  const isTestEnv =
+    import.meta.env.MODE === 'test' || import.meta.env.NODE_ENV === 'test'
   const isFetchMocked = typeof (fetch as any)?.mock === 'object'
   if (isTestEnv && !isFetchMocked) return mockPlace(req)
 
@@ -66,4 +67,3 @@ function mockPlace(req: GeoRequest): GeoResponse {
     source: 'mock',
   }
 }
-

@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { clearMoodStore, loadMoods, moodStore, saveMood } from '../state/moodStore'
+import {
+  clearMoodStore,
+  loadMoods,
+  moodStore,
+  saveMood,
+} from '../state/moodStore'
 
 const storageKey = 'clear-moods-spec'
 
@@ -41,4 +46,3 @@ describe('clearMoodStore', () => {
     expect(persisted[0].text).toBe('fresh')
   })
 })
-

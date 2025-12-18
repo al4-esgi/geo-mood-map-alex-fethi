@@ -1,8 +1,15 @@
 import { X } from 'lucide-react'
 import { Button } from '../../ui/button'
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../ui/drawer'
-import { useResponsive } from '@/lib/useResponsive'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '../../ui/drawer'
 import { MoodDetailsCard } from '../_utils/MoodDetailsCard'
+import { useResponsive } from '@/lib/useResponsive'
 
 interface MoodEntry {
   id: string
@@ -39,19 +46,24 @@ export function MoodHistoryDrawer({
     total === 0
       ? 0
       : Math.round(
-        (sortedEntries.reduce((acc, entry) => acc + entry.rating, 0) / total) *
-        10,
-      ) / 10
+          (sortedEntries.reduce((acc, entry) => acc + entry.rating, 0) /
+            total) *
+            10,
+        ) / 10
   const averageScore =
     total === 0
       ? 0
       : Math.round(
-        (sortedEntries.reduce((acc, entry) => acc + entry.score, 0) / total) *
-        10,
-      ) / 10
+          (sortedEntries.reduce((acc, entry) => acc + entry.score, 0) / total) *
+            10,
+        ) / 10
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? 'bottom' : 'right'}>
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      direction={isMobile ? 'bottom' : 'right'}
+    >
       <DrawerContent className={`h-[${isMobile ? '85vh' : 'auto'}]`}>
         <DrawerHeader className="border-b bg-gradient-custom/10">
           <div className="flex items-start justify-between gap-3">
@@ -69,7 +81,8 @@ export function MoodHistoryDrawer({
                   Score moyen {averageScore}
                 </span>
                 <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                  Dernier: {sortedEntries[0]?.createdAt.toLocaleDateString('fr-FR', {
+                  Dernier:{' '}
+                  {sortedEntries[0]?.createdAt.toLocaleDateString('fr-FR', {
                     day: '2-digit',
                     month: 'short',
                     year: 'numeric',
@@ -102,12 +115,17 @@ export function MoodHistoryDrawer({
                 <div
                   key={entry.id}
                   onClick={() => onMoodClick?.(entry)}
-                  className={`group overflow-hidden rounded-xl border bg-white/90 p-0 shadow-sm transition-all duration-200 ${onMoodClick
-                    ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/60'
-                    : ''
-                    }`}
+                  className={`group overflow-hidden rounded-xl border bg-white/90 p-0 shadow-sm transition-all duration-200 ${
+                    onMoodClick
+                      ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/60'
+                      : ''
+                  }`}
                 >
-                  <MoodDetailsCard entry={entry} variant="list" className="p-4" />
+                  <MoodDetailsCard
+                    entry={entry}
+                    variant="list"
+                    className="p-4"
+                  />
                 </div>
               ))}
             </div>

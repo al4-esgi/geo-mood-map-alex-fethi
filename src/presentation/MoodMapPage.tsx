@@ -176,8 +176,9 @@ export function MoodMapPage({
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-1200 px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-in slide-in-from-top ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
-            }`}
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-1200 px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-in slide-in-from-top ${
+            toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          }`}
         >
           {toast.message}
         </div>

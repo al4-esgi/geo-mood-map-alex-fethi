@@ -1,4 +1,11 @@
-import { Cloud, CloudLightning, CloudRain, CloudSnow, CloudSun, Sun } from 'lucide-react'
+import {
+  Cloud,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Sun,
+} from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { getMoodEmoji } from '@/lib/moodUtils'
@@ -23,19 +30,27 @@ type MoodDetailsCardProps = {
 }
 
 const variantClasses = {
-  popup:
-    'w-[min(440px,88vw)] space-y-4 rounded-2xl bg-white/90 py-3',
+  popup: 'w-[min(440px,88vw)] space-y-4 rounded-2xl bg-white/90 py-3',
   list: 'space-y-3 rounded-2xl bg-white p-3 ring-1 ring-slate-200 shadow-sm w-full',
 }
 
 function resolveWeatherIcon(summary?: string) {
   if (!summary) return null
   const lower = summary.toLowerCase()
-  if (lower.includes('orage') || lower.includes('thunder')) return { Icon: CloudLightning, color: 'text-amber-500' }
-  if (lower.includes('neige') || lower.includes('snow')) return { Icon: CloudSnow, color: 'text-blue-500' }
-  if (lower.includes('pluie') || lower.includes('rain')) return { Icon: CloudRain, color: 'text-blue-600' }
-  if (lower.includes('nuage') || lower.includes('cloud')) return { Icon: CloudSun, color: 'text-slate-600' }
-  if (lower.includes('soleil') || lower.includes('clear') || lower.includes('sun')) return { Icon: Sun, color: 'text-amber-400' }
+  if (lower.includes('orage') || lower.includes('thunder'))
+    return { Icon: CloudLightning, color: 'text-amber-500' }
+  if (lower.includes('neige') || lower.includes('snow'))
+    return { Icon: CloudSnow, color: 'text-blue-500' }
+  if (lower.includes('pluie') || lower.includes('rain'))
+    return { Icon: CloudRain, color: 'text-blue-600' }
+  if (lower.includes('nuage') || lower.includes('cloud'))
+    return { Icon: CloudSun, color: 'text-slate-600' }
+  if (
+    lower.includes('soleil') ||
+    lower.includes('clear') ||
+    lower.includes('sun')
+  )
+    return { Icon: Sun, color: 'text-amber-400' }
   return { Icon: Cloud, color: 'text-slate-600' }
 }
 
@@ -83,13 +98,17 @@ export function MoodDetailsCard({
           <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Humeur
           </div>
-          <div className="text-slate-800">{entry.text || 'Aucune note ajoutée.'}</div>
+          <div className="text-slate-800">
+            {entry.text || 'Aucune note ajoutée.'}
+          </div>
         </div>
         <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 shadow-sm">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Note
           </div>
-          <div className="text-slate-800">{getMoodEmoji(entry.rating)} {entry.rating}/5</div>
+          <div className="text-slate-800">
+            {getMoodEmoji(entry.rating)} {entry.rating}/5
+          </div>
         </div>
         <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 shadow-sm">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">

@@ -1,4 +1,4 @@
-import { describe, expect, beforeEach, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
 import type { MoodEntryInput } from '../persistence/inMemoryMoodStore'
@@ -42,4 +42,3 @@ describe('localStorage mood store', () => {
     expect(restored[0].createdAt).toBeInstanceOf(Date)
   })
 })
-

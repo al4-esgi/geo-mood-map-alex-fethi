@@ -4,12 +4,19 @@ import { useStore } from '@tanstack/react-store'
 import { computeMoodScore } from '../mood/moodScore'
 import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
-import CameraCapture from './CameraCapture'
 import { getPlaceByCoords } from '../services/geolocationService'
 import { getWeatherByCoords } from '../services/weatherService'
-import { clearMoodStore, loadMoods, moodStore, saveMood, type MoodPersistence } from '../state/moodStore'
+import {
+  
+  clearMoodStore,
+  loadMoods,
+  moodStore,
+  saveMood
+} from '../state/moodStore'
 import { analyzeText } from '../services/textAnalysisService'
 import { analyzeImage } from '../services/visionService'
+import CameraCapture from './CameraCapture'
+import type {MoodPersistence} from '../state/moodStore';
 
 const defaultCoords = { lat: 48.8566, lon: 2.3522 } // Paris as deterministic fallback
 
@@ -18,10 +25,10 @@ function weatherLabel(weather: { condition: string; temperature: number }) {
 }
 
 type MoodCaptureProps = {
-  initialCoords?: { lat: number; lon: number };
-  persistence?: MoodPersistence;
-  storageKey?: string;
-};
+  initialCoords?: { lat: number; lon: number }
+  persistence?: MoodPersistence
+  storageKey?: string
+}
 
 export function MoodCapture({
   initialCoords = defaultCoords,
@@ -30,7 +37,8 @@ export function MoodCapture({
 }: MoodCaptureProps) {
   useMemo(() => {
     // Ensure persistence stores are initialized for each mode
-    if (persistence === 'localStorage') return createLocalStorageMoodStore(storageKey)
+    if (persistence === 'localStorage')
+      return createLocalStorageMoodStore(storageKey)
     return createInMemoryMoodStore()
   }, [persistence, storageKey])
   const entries = useStore(moodStore)
@@ -39,10 +47,18 @@ export function MoodCapture({
   const [text, setText] = useState('')
   const [rating, setRating] = useState(3)
   const [imageUrl, setImageUrl] = useState('')
-  const [imageFileDataUrl, setImageFileDataUrl] = useState<string | undefined>(undefined)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [coords, setCoords] = useState<{ lat: number; lon: number }>(initialCoords)
-  const [locationStatus, setLocationStatus] = useState<'pending' | 'ready' | 'failed'>('pending')
+  const [imageFileDataUrl, setImageFileDataUrl] = useState<string | undefined>(
+    undefined,
+  )
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle',
+  )
+  const [coords, setCoords] = useState<{ lat: number; lon: number }>(
+    initialCoords,
+  )
+  const [locationStatus, setLocationStatus] = useState<
+    'pending' | 'ready' | 'failed'
+  >('pending')
   const [toast, setToast] = useState<string | null>(null)
   const [cameraReset, setCameraReset] = useState(0)
   const lastError = useRef<string | null>(null)
@@ -94,7 +110,9 @@ export function MoodCapture({
       const place = await getPlaceByCoords(coords)
       const weather = await getWeatherByCoords(coords)
       const textSentiment = text ? await analyzeText(text) : undefined
-      const vision = imageFileDataUrl ? await analyzeImage(imageFileDataUrl) : undefined
+      const vision = imageFileDataUrl
+        ? await analyzeImage(imageFileDataUrl)
+        : undefined
       const score = computeMoodScore({
         rating,
         text,
@@ -103,15 +121,19 @@ export function MoodCapture({
         imageSentimentScore: vision?.score,
       })
 
-      await saveMood(persistence, {
-        text,
-        rating,
-        score,
-        placeName: place.name,
-        weatherSummary: weatherLabel(weather),
-        weatherIcon: weather.icon,
-        imageUrl: imageFileDataUrl || imageUrl || undefined,
-      }, storageKey)
+      await saveMood(
+        persistence,
+        {
+          text,
+          rating,
+          score,
+          placeName: place.name,
+          weatherSummary: weatherLabel(weather),
+          weatherIcon: weather.icon,
+          imageUrl: imageFileDataUrl || imageUrl || undefined,
+        },
+        storageKey,
+      )
       setStatus('saved')
       setText('')
       setImageUrl('')
@@ -131,7 +153,10 @@ export function MoodCapture({
           {toast}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="bg-white space-y-4 border rounded-md p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white space-y-4 border rounded-md p-4"
+      >
         <div className="space-y-1">
           <label htmlFor="mood-text" className="block font-medium">
             Mood text
@@ -176,9 +201,10 @@ export function MoodCapture({
           />
           {imageFileDataUrl && (
             <div className="flex flex-col">
-              <span className='text-green-600'>Photo ready</span>
+              <span className="text-green-600">Photo ready</span>
               <span className="text-slate-700">
-                Captured photo stored as data URL (persists in store/localStorage)
+                Captured photo stored as data URL (persists in
+                store/localStorage)
               </span>
             </div>
           )}
@@ -235,7 +261,9 @@ export function MoodCapture({
             {status === 'saving' ? 'Saving…' : 'Save mood'}
           </button>
           {status === 'saved' && <span role="status">Saved</span>}
-          {status === 'error' && <span role="status">Error: {lastError.current}</span>}
+          {status === 'error' && (
+            <span role="status">Error: {lastError.current}</span>
+          )}
           <button
             type="button"
             onClick={clearMoods}
@@ -267,7 +295,9 @@ export function MoodCapture({
                 )}
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <div className="font-semibold text-slate-900">{entry.placeName}</div>
+                    <div className="font-semibold text-slate-900">
+                      {entry.placeName}
+                    </div>
                     <div className="text-xs text-slate-500">
                       {entry.createdAt.toLocaleString()}
                     </div>
@@ -281,10 +311,11 @@ export function MoodCapture({
                         className="h-6 w-6"
                       />
                     )}
-                    {entry.weatherSummary && <span>{entry.weatherSummary}</span>}
+                    {entry.weatherSummary && (
+                      <span>{entry.weatherSummary}</span>
+                    )}
                   </div>
                   <div className="text-sm text-slate-800">{entry.text}</div>
-
                 </div>
               </li>
             ))}
@@ -296,4 +327,3 @@ export function MoodCapture({
 }
 
 export default MoodCapture
-

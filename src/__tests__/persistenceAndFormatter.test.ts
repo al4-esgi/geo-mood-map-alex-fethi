@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { createInMemoryMoodStore, type MoodEntryInput } from '../persistence/inMemoryMoodStore'
+import {
+  
+  createInMemoryMoodStore
+} from '../persistence/inMemoryMoodStore'
+import type {MoodEntryInput} from '../persistence/inMemoryMoodStore';
 
 const sample: MoodEntryInput = {
   text: 'Feeling calm',
@@ -24,4 +28,3 @@ describe('in-memory mood store', () => {
     expect(list[0].createdAt).toBeInstanceOf(Date)
   })
 })
-

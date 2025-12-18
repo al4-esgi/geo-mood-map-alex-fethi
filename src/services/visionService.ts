@@ -1,13 +1,14 @@
 export type VisionAnalysisResult = {
-  score: number; // -1..1
-  labels?: string[];
-  source: 'api' | 'mock';
-};
+  score: number // -1..1
+  labels?: Array<string>
+  source: 'api' | 'mock'
+}
 
-const VISION_ENDPOINT =
-  'https://vision.googleapis.com/v1/images:annotate?key='
+const VISION_ENDPOINT = 'https://vision.googleapis.com/v1/images:annotate?key='
 
-export async function analyzeImage(dataUrl: string): Promise<VisionAnalysisResult> {
+export async function analyzeImage(
+  dataUrl: string,
+): Promise<VisionAnalysisResult> {
   const isTestEnv =
     import.meta.env.MODE === 'test' || import.meta.env.NODE_ENV === 'test'
   const apiKey = import.meta.env.VITE_GCLOUD_VISION_KEY
@@ -26,17 +27,28 @@ export async function analyzeImage(dataUrl: string): Promise<VisionAnalysisResul
         requests: [
           {
             image: { content: base64 },
-            features: [{ type: 'FACE_DETECTION' }, { type: 'LABEL_DETECTION', maxResults: 5 }],
+            features: [
+              { type: 'FACE_DETECTION' },
+              { type: 'LABEL_DETECTION', maxResults: 5 },
+            ],
           },
         ],
       }),
     })
     if (!res.ok) return mockVisionAnalysis()
     const data = (await res.json()) as {
-      responses?: { faceAnnotations?: { joyLikelihood?: string; sorrowLikelihood?: string }[]; labelAnnotations?: { description?: string }[] }[]
+      responses?: Array<{
+        faceAnnotations?: Array<{
+          joyLikelihood?: string
+          sorrowLikelihood?: string
+        }>
+        labelAnnotations?: Array<{ description?: string }>
+      }>
     }
     const face = data.responses?.[0]?.faceAnnotations?.[0]
-    const labels = data.responses?.[0]?.labelAnnotations?.map((l) => l.description ?? '').filter(Boolean)
+    const labels = data.responses?.[0]?.labelAnnotations
+      ?.map((l) => l.description ?? '')
+      .filter(Boolean)
     const joy = likelihoodToScore(face?.joyLikelihood)
     const sorrow = likelihoodToScore(face?.sorrowLikelihood)
     const score = clamp(joy - sorrow, -1, 1)
@@ -64,4 +76,3 @@ function mockVisionAnalysis(): VisionAnalysisResult {
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n))
 }
-

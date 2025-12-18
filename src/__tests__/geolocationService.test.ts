@@ -28,4 +28,3 @@ describe('geolocationService', () => {
     fetchMock.mockRestore()
   })
 })
-

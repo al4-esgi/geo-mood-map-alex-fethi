@@ -22,7 +22,9 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
 
     async function start() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        })
         streamRef.current = stream
         if (videoRef.current) {
           videoRef.current.srcObject = stream
@@ -98,14 +100,23 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
 
   return (
     <div className="space-y-4 rounded-2xl border bg-white/80 p-4 shadow-lg ring-1 ring-slate-200">
-      <div className={`flex items-center justify-between ${!active && !captured && !error ? 'm-0!' : ''}`}>
-        <div className="flex items-center gap-3 cursor-pointer" onClick={handleStart}>
+      <div
+        className={`flex items-center justify-between ${!active && !captured && !error ? 'm-0!' : ''}`}
+      >
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={handleStart}
+        >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-custom text-white shadow-inner">
             <Camera className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-slate-900">Capture photo</p>
-            <p className="text-xs text-slate-600">Ajoute une image à ton mood</p>
+            <p className="text-sm font-semibold text-slate-900">
+              Capture photo
+            </p>
+            <p className="text-xs text-slate-600">
+              Ajoute une image à ton mood
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -115,18 +126,24 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
             </span>
           )}
           <span
-            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${active
-              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-              : captured
-                ? 'bg-blue-50 text-blue-700 ring-blue-200'
-                : 'bg-slate-100 text-slate-700 ring-slate-200'
-              }`}
+            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
+              active
+                ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                : captured
+                  ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                  : 'bg-slate-100 text-slate-700 ring-slate-200'
+            }`}
           >
             <span
-              className={`h-2 w-2 rounded-full ${active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
-                }`}
+              className={`h-2 w-2 rounded-full ${
+                active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+              }`}
             />
-            {active ? 'Caméra active' : captured ? 'Capture prête' : 'En attente'}
+            {active
+              ? 'Caméra active'
+              : captured
+                ? 'Capture prête'
+                : 'En attente'}
           </span>
         </div>
       </div>
@@ -186,7 +203,9 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
         <div className="space-y-2 rounded-xl border bg-white/70 p-3 shadow-inner ring-1 ring-slate-200">
           <div className="flex items-center justify-between text-xs text-slate-600">
             <span>Prévisualisation</span>
-            {resolution && <span className="font-semibold text-slate-700">{resolution}</span>}
+            {resolution && (
+              <span className="font-semibold text-slate-700">{resolution}</span>
+            )}
           </div>
           <div className="overflow-hidden rounded-lg ring-1 ring-slate-100 shadow">
             <img
@@ -202,4 +221,3 @@ export function CameraCapture({ onCapture, resetSignal, onClear }: Props) {
 }
 
 export default CameraCapture
-

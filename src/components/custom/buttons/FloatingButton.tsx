@@ -7,7 +7,14 @@ interface FloatingButtonProps {
   onClick: () => void
   label?: string
   position?: 'top-right' | 'bottom-right' | 'bottom-left' | 'top-left'
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'white' | 'black' | 'gradient'
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'danger'
+    | 'white'
+    | 'black'
+    | 'gradient'
   size?: 'sm' | 'md' | 'lg'
   className?: string
   strategy?: 'fixed' | 'inline'

@@ -3,13 +3,13 @@ import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
-import { MoodDetailsCard } from './_utils/MoodDetailsCard'
-import type { Marker as LeafletMarker } from 'leaflet'
 
 // Fix for default marker icons in react-leaflet
 import iconRetina from 'leaflet/dist/images/marker-icon-2x.png'
 import icon from 'leaflet/dist/images/marker-icon.png'
 import iconShadow from 'leaflet/dist/images/marker-shadow.png'
+import { MoodDetailsCard } from './_utils/MoodDetailsCard'
+import type { Marker as LeafletMarker } from 'leaflet'
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -126,7 +126,12 @@ function MapUpdater({ center }: { center: [number, number] }) {
   return null
 }
 
-export function MapView({ entries, center, zoom = 13, selectedMoodId }: MapViewProps) {
+export function MapView({
+  entries,
+  center,
+  zoom = 13,
+  selectedMoodId,
+}: MapViewProps) {
   const [isMounted, setIsMounted] = useState(false)
   const markerRefs = useRef<Map<string, LeafletMarker>>(new Map())
   const clusterGroupRef = useRef<any>(null)
@@ -177,7 +182,7 @@ export function MapView({ entries, center, zoom = 13, selectedMoodId }: MapViewP
         maxClusterRadius={60}
         spiderfyOnMaxZoom={true}
         showCoverageOnHover={false}
-        className='bg-gradient-custom'
+        className="bg-gradient-custom"
       >
         {entries.map((entry) => {
           const coords: [number, number] = entry.coords || center
