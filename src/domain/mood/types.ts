@@ -7,6 +7,7 @@ export type WeatherSnapshot = {
   condition: 'sun' | 'clouds' | 'rain' | 'snow' | 'clear'
   temperature: number
   humidity?: number
+  icon?: string
 }
 
 export type SentimentScore = {
