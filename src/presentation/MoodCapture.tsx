@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
 
 import { computeMoodScore } from '../mood/moodScore'
@@ -34,14 +34,9 @@ export function MoodCapture({
   persistence = 'localStorage',
   storageKey,
 }: MoodCaptureProps) {
-  useMemo(() => {
-    // Ensure persistence stores are initialized for each mode
-    if (persistence === 'localStorage')
-      return createLocalStorageMoodStore(storageKey)
-    return createInMemoryMoodStore()
-  }, [persistence, storageKey])
   const entries = useStore(moodStore)
   const hydratedRef = useRef(false)
+  const storeInitRef = useRef(false)
 
   const [text, setText] = useState('')
   const [rating, setRating] = useState(3)
@@ -68,6 +63,16 @@ export function MoodCapture({
     loadMoods(persistence, storageKey).catch(() => {
       /* ignore hydration errors */
     })
+  }, [persistence, storageKey])
+
+  useEffect(() => {
+    if (storeInitRef.current) return
+    storeInitRef.current = true
+    if (persistence === 'localStorage') {
+      createLocalStorageMoodStore(storageKey)
+    } else {
+      createInMemoryMoodStore()
+    }
   }, [persistence, storageKey])
 
   useEffect(() => {
@@ -130,6 +135,7 @@ export function MoodCapture({
           weatherSummary: weatherLabel(weather),
           weatherIcon: weather.icon,
           imageUrl: imageFileDataUrl || imageUrl || undefined,
+          coords: [coords.lat, coords.lon],
         },
         storageKey,
       )

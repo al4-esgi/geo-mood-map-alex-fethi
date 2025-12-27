@@ -1,7 +1,11 @@
-import type { MoodRepository, MoodRecord, SaveMoodCommand } from '../../domain/ports/MoodRepository'
+import type {
+  MoodRecord,
+  MoodRepository,
+  SaveMoodCommand,
+} from '../../domain/ports/MoodRepository'
 
 export class FakeMoodRepository implements MoodRepository {
-  private entries: MoodRecord[] = []
+  private entries: Array<MoodRecord> = []
 
   async save(input: SaveMoodCommand): Promise<MoodRecord> {
     const saved: MoodRecord = {
@@ -13,7 +17,7 @@ export class FakeMoodRepository implements MoodRepository {
     return saved
   }
 
-  async list(): Promise<MoodRecord[]> {
+  async list(): Promise<Array<MoodRecord>> {
     return [...this.entries]
   }
 
@@ -21,4 +25,3 @@ export class FakeMoodRepository implements MoodRepository {
     this.entries = []
   }
 }
-

@@ -2,9 +2,10 @@ import type { TextSentimentProvider } from '../../../domain/ports/TextSentimentP
 import type { SentimentScore } from '../../../domain/mood/types'
 
 export class MockTextSentimentProvider implements TextSentimentProvider {
-  constructor(private result: SentimentScore = { score: 0.5, source: 'mock' }) {}
+  constructor(
+    private result: SentimentScore = { score: 0.5, source: 'mock' },
+  ) {}
   async analyze(): Promise<SentimentScore> {
     return this.result
   }
 }
-

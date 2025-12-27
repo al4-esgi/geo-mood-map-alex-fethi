@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-let PrismaMoodRepository: typeof import('../../infrastructure/db/PrismaMoodRepository').PrismaMoodRepository
-let prisma: typeof import('../../infrastructure/db/prisma').default
+let PrismaMoodRepository: typeof import('../../src/infrastructure/db/PrismaMoodRepository').PrismaMoodRepository
+let prisma: typeof import('../../src/infrastructure/db/prisma').default
 
 // Ensure a test database per run
 const testDbPath = path.join(process.cwd(), 'prisma', 'test.db')
@@ -14,8 +14,8 @@ describe('PrismaMoodRepository', () => {
     process.env.DATABASE_URL = testDbUrl
     if (fs.existsSync(testDbPath)) fs.rmSync(testDbPath)
     ;({ PrismaMoodRepository } =
-      await import('../../infrastructure/db/PrismaMoodRepository'))
-    ;({ default: prisma } = await import('../../infrastructure/db/prisma'))
+      await import('../../src/infrastructure/db/PrismaMoodRepository'))
+    ;({ default: prisma } = await import('../../src/infrastructure/db/prisma'))
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS Mood (
         id TEXT PRIMARY KEY,

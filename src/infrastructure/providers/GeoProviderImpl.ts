@@ -1,6 +1,6 @@
+import { getPlaceByCoords } from '../../services/geolocationService'
 import type { GeoProvider, Place } from '../../domain/ports/GeoProvider'
 import type { Coordinates } from '../../domain/mood/types'
-import { getPlaceByCoords } from '../../services/geolocationService'
 
 export class GeoProviderImpl implements GeoProvider {
   async getPlaceByCoords(coords: Coordinates): Promise<Place> {
@@ -13,4 +13,3 @@ export class GeoProviderImpl implements GeoProvider {
     }
   }
 }
-

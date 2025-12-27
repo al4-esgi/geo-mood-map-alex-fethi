@@ -1,8 +1,11 @@
-import type { MoodScoreInput } from '../../domain/mood/types'
 import { MoodScoreService } from '../../domain/mood/MoodScoreService'
+import type { MoodScoreInput } from '../../domain/mood/types'
 import type { GeoProvider } from '../../domain/ports/GeoProvider'
 import type { ImageSentimentProvider } from '../../domain/ports/ImageSentimentProvider'
-import type { MoodRepository, SaveMoodCommand } from '../../domain/ports/MoodRepository'
+import type {
+  MoodRepository,
+  SaveMoodCommand,
+} from '../../domain/ports/MoodRepository'
 import type { TextSentimentProvider } from '../../domain/ports/TextSentimentProvider'
 import type { WeatherProvider } from '../../domain/ports/WeatherProvider'
 import type { MoodDto } from '../dtos/MoodDto'
@@ -40,6 +43,7 @@ export class SaveMoodUseCase {
       weather,
       textSentimentScore: textSentiment.score,
       imageSentimentScore: imageSentiment.score,
+      imageSentiment: undefined,
     } satisfies MoodScoreInput)
 
     const toSave: SaveMoodCommand = {
@@ -47,6 +51,8 @@ export class SaveMoodUseCase {
       rating: input.rating,
       score,
       placeName: place.name,
+      latitude: place.lat,
+      longitude: place.lon,
       weatherSummary: `${weather.condition} ${weather.temperature}°C`,
       weatherIcon: weather.icon,
       imageUrl: input.imageDataUrl,
@@ -59,4 +65,3 @@ export class SaveMoodUseCase {
     return saved
   }
 }
-

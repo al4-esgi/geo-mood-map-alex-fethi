@@ -11,4 +11,3 @@ export type MoodDto = {
   imageSentimentScore?: number
   createdAt: Date
 }
-

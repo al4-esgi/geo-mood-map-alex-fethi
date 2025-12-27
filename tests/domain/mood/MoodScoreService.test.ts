@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { MoodScoreService } from './MoodScoreService'
-import type { MoodScoreInput } from './types'
+import { MoodScoreService } from '../../../src/domain/mood/MoodScoreService'
+import type { MoodScoreInput } from '../../../src/domain/mood/types'
 
 const baseInput: MoodScoreInput = {
   rating: 3,
@@ -17,12 +17,18 @@ describe('MoodScoreService', () => {
   })
 
   it('applies positive text sentiment from keywords', () => {
-    const score = MoodScoreService.compute({ ...baseInput, text: 'I feel happy and calm' })
+    const score = MoodScoreService.compute({
+      ...baseInput,
+      text: 'I feel happy and calm',
+    })
     expect(score).toBe(70)
   })
 
   it('applies AI text sentiment score when provided', () => {
-    const score = MoodScoreService.compute({ ...baseInput, textSentimentScore: 0.5 })
+    const score = MoodScoreService.compute({
+      ...baseInput,
+      textSentimentScore: 0.5,
+    })
     expect(score).toBe(70)
   })
 
@@ -69,4 +75,3 @@ describe('MoodScoreService', () => {
     expect(score).toBe(100)
   })
 })
-

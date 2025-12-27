@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { FakeGeoProvider, FakeImageSentimentProvider, FakeTextSentimentProvider, FakeWeatherProvider } from '../fakes/FakeProviders'
-import { FakeMoodRepository } from '../fakes/FakeMoodRepository'
-import { SaveMoodUseCase } from './SaveMoodUseCase'
+import {
+  FakeGeoProvider,
+  FakeImageSentimentProvider,
+  FakeTextSentimentProvider,
+  FakeWeatherProvider,
+} from '../../../src/application/fakes/FakeProviders'
+import { FakeMoodRepository } from '../../../src/application/fakes/FakeMoodRepository'
+import { SaveMoodUseCase } from '../../../src/application/usecases/SaveMoodUseCase'
 
 describe('SaveMoodUseCase', () => {
   it('computes mood score and persists entry via repo', async () => {
@@ -29,4 +34,3 @@ describe('SaveMoodUseCase', () => {
     expect(saved.imageSentimentScore).toBe(0.4)
   })
 })
-

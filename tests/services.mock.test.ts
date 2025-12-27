@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { getPlaceByCoords } from '../services/geolocationService'
-import { getWeatherByCoords } from '../services/weatherService'
+import { getPlaceByCoords } from '../src/services/geolocationService'
+import { getWeatherByCoords } from '../src/services/weatherService'
 
 const parisCoords = { lat: 48.8566, lon: 2.3522 }
 

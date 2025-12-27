@@ -5,7 +5,7 @@ import {
   loadMoods,
   moodStore,
   saveMood,
-} from '../state/moodStore'
+} from '../src/state/moodStore'
 
 const storageKey = 'clear-moods-spec'
 

@@ -1,6 +1,5 @@
 import type { SentimentScore } from '../mood/types'
 
 export interface TextSentimentProvider {
-  analyze(text: string): Promise<SentimentScore>
+  analyze: (text: string) => Promise<SentimentScore>
 }
-

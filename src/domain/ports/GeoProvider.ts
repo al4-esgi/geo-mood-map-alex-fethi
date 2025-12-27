@@ -8,6 +8,5 @@ export type Place = {
 }
 
 export interface GeoProvider {
-  getPlaceByCoords(coords: Coordinates): Promise<Place>
+  getPlaceByCoords: (coords: Coordinates) => Promise<Place>
 }
-
