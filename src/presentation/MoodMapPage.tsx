@@ -8,6 +8,7 @@ import { AddMoodModal } from '../components/custom/modals/AddMoodModal'
 import { MoodHistoryDrawer } from '../components/custom/modals/MoodHistoryDrawer'
 import { SettingsModal } from '../components/custom/modals/SettingsModal'
 import { computeMoodScore } from '../mood/moodScore'
+import { createApiMoodStore } from '../persistence/apiMoodStore'
 import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
 import { getPlaceByCoords } from '../services/geolocationService'
@@ -43,6 +44,7 @@ export function MoodMapPage({
     // Ensure persistence stores are initialized for each mode
     if (persistence === 'localStorage')
       return createLocalStorageMoodStore(storageKey)
+    if (persistence === 'api') return createApiMoodStore()
     return createInMemoryMoodStore()
   }, [persistence, storageKey])
 

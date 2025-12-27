@@ -7,5 +7,5 @@ export const Route = createFileRoute('/')({
 })
 
 function App() {
-  return <MoodMapPage />
+  return <MoodMapPage persistence="api" />
 }

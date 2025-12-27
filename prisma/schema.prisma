@@ -13,6 +13,8 @@ model Mood {
   rating              Int
   score               Int
   placeName           String
+  latitude            Float?
+  longitude           Float?
   weatherSummary      String?
   weatherIcon         String?
   imageUrl            String?

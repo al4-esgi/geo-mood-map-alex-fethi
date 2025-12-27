@@ -1,5 +1,9 @@
-import type { MoodRepository, MoodRecord, SaveMoodCommand } from '../../domain/ports/MoodRepository'
 import prisma from './prisma'
+import type {
+  MoodRecord,
+  MoodRepository,
+  SaveMoodCommand,
+} from '../../domain/ports/MoodRepository'
 
 export class PrismaMoodRepository implements MoodRepository {
   async save(input: SaveMoodCommand): Promise<MoodRecord> {
@@ -9,6 +13,8 @@ export class PrismaMoodRepository implements MoodRepository {
         rating: input.rating,
         score: input.score,
         placeName: input.placeName,
+        latitude: input.latitude,
+        longitude: input.longitude,
         weatherSummary: input.weatherSummary,
         weatherIcon: input.weatherIcon,
         imageUrl: input.imageUrl,
@@ -20,7 +26,7 @@ export class PrismaMoodRepository implements MoodRepository {
     return mapRecord(created)
   }
 
-  async list(): Promise<MoodRecord[]> {
+  async list(): Promise<Array<MoodRecord>> {
     const rows = await prisma.mood.findMany({ orderBy: { createdAt: 'asc' } })
     return rows.map(mapRecord)
   }
@@ -36,6 +42,8 @@ function mapRecord(row: {
   rating: number
   score: number
   placeName: string
+  latitude: number | null
+  longitude: number | null
   weatherSummary: string | null
   weatherIcon: string | null
   imageUrl: string | null
@@ -49,6 +57,8 @@ function mapRecord(row: {
     rating: row.rating,
     score: row.score,
     placeName: row.placeName,
+    latitude: row.latitude ?? undefined,
+    longitude: row.longitude ?? undefined,
     weatherSummary: row.weatherSummary ?? undefined,
     weatherIcon: row.weatherIcon ?? undefined,
     imageUrl: row.imageUrl ?? undefined,
@@ -57,4 +67,3 @@ function mapRecord(row: {
     createdAt: row.createdAt,
   }
 }
-
