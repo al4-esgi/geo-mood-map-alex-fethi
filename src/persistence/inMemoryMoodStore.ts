@@ -6,6 +6,8 @@ export type MoodEntryInput = {
   weatherSummary?: string
   weatherIcon?: string
   imageUrl?: string
+  textSentimentScore?: number
+  imageSentimentScore?: number
   coords?: [number, number]
   createdAt?: Date
 }
@@ -18,6 +20,7 @@ export type MoodEntry = MoodEntryInput & {
 export type MoodStore = {
   save: (entry: MoodEntryInput) => Promise<MoodEntry>
   list: () => Promise<Array<MoodEntry>>
+  clear: () => Promise<void>
 }
 
 export function createInMemoryMoodStore(): MoodStore {
@@ -35,6 +38,9 @@ export function createInMemoryMoodStore(): MoodStore {
     },
     async list() {
       return [...entries]
+    },
+    async clear() {
+      entries.length = 0
     },
   }
 }

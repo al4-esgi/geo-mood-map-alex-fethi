@@ -1,6 +1,6 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 let PrismaMoodRepository: typeof import('../../infrastructure/db/PrismaMoodRepository').PrismaMoodRepository
 let prisma: typeof import('../../infrastructure/db/prisma').default
@@ -13,7 +13,8 @@ describe('PrismaMoodRepository', () => {
   beforeAll(async () => {
     process.env.DATABASE_URL = testDbUrl
     if (fs.existsSync(testDbPath)) fs.rmSync(testDbPath)
-    ;({ PrismaMoodRepository } = await import('../../infrastructure/db/PrismaMoodRepository'))
+    ;({ PrismaMoodRepository } =
+      await import('../../infrastructure/db/PrismaMoodRepository'))
     ;({ default: prisma } = await import('../../infrastructure/db/prisma'))
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS Mood (
@@ -22,6 +23,8 @@ describe('PrismaMoodRepository', () => {
         rating INTEGER NOT NULL,
         score INTEGER NOT NULL,
         placeName TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
         weatherSummary TEXT,
         weatherIcon TEXT,
         imageUrl TEXT,
@@ -60,4 +63,3 @@ describe('PrismaMoodRepository', () => {
     expect(list[0].text).toBe('hello')
   })
 })
-

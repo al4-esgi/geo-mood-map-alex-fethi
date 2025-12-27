@@ -1,4 +1,5 @@
 import { Store } from '@tanstack/store'
+import { createApiMoodStore } from '../persistence/apiMoodStore'
 import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
 import type {
@@ -7,7 +8,7 @@ import type {
   MoodStore,
 } from '../persistence/inMemoryMoodStore'
 
-export type MoodPersistence = 'memory' | 'localStorage'
+export type MoodPersistence = 'memory' | 'localStorage' | 'api'
 
 const DEFAULT_STORAGE_KEY = 'geomood.entries'
 
@@ -15,6 +16,7 @@ export const moodStore = new Store<Array<MoodEntry>>([])
 
 let memoryStore = createInMemoryMoodStore()
 const localStorageStores = new Map<string | undefined, MoodStore>()
+let apiStore: MoodStore | null = null
 
 export async function loadMoods(
   persistence: MoodPersistence,
@@ -47,10 +49,16 @@ function getPersistenceStore(
     localStorageStores.set(storageKey, created)
     return created
   }
+  if (persistence === 'api') {
+    if (!apiStore) {
+      apiStore = createApiMoodStore()
+    }
+    return apiStore
+  }
   return memoryStore
 }
 
-export function clearMoodStore(
+export async function clearMoodStore(
   persistence: MoodPersistence,
   storageKey?: string,
 ) {
@@ -60,6 +68,10 @@ export function clearMoodStore(
       localStorage.removeItem(resolvedStorageKey)
     }
     localStorageStores.delete(storageKey)
+  } else if (persistence === 'api') {
+    if (apiStore) {
+      await apiStore.clear()
+    }
   } else {
     memoryStore = createInMemoryMoodStore()
   }

@@ -21,6 +21,12 @@ export function createLocalStorageMoodStore(
     async list() {
       return [...entries]
     },
+    async clear() {
+      entries = []
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(storageKey)
+      }
+    },
   }
 }
 
