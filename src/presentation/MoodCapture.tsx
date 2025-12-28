@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
+import { useEffect, useRef, useState } from 'react'
 
 import { computeMoodScore } from '../mood/moodScore'
 import { createInMemoryMoodStore } from '../persistence/inMemoryMoodStore'
 import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
 import { getPlaceByCoords } from '../services/geolocationService'
+import { analyzeText } from '../services/textAnalysisService'
+import { analyzeImage } from '../services/visionService'
 import { getWeatherByCoords } from '../services/weatherService'
 import {
   clearMoodStore,
@@ -12,8 +14,6 @@ import {
   moodStore,
   saveMood,
 } from '../state/moodStore'
-import { analyzeText } from '../services/textAnalysisService'
-import { analyzeImage } from '../services/visionService'
 import CameraCapture from './CameraCapture'
 import type { MoodPersistence } from '../state/moodStore'
 
@@ -34,14 +34,9 @@ export function MoodCapture({
   persistence = 'localStorage',
   storageKey,
 }: MoodCaptureProps) {
-  useMemo(() => {
-    // Ensure persistence stores are initialized for each mode
-    if (persistence === 'localStorage')
-      return createLocalStorageMoodStore(storageKey)
-    return createInMemoryMoodStore()
-  }, [persistence, storageKey])
   const entries = useStore(moodStore)
   const hydratedRef = useRef(false)
+  const storeInitRef = useRef(false)
 
   const [text, setText] = useState('')
   const [rating, setRating] = useState(3)
@@ -71,6 +66,16 @@ export function MoodCapture({
   }, [persistence, storageKey])
 
   useEffect(() => {
+    if (storeInitRef.current) return
+    storeInitRef.current = true
+    if (persistence === 'localStorage') {
+      createLocalStorageMoodStore(storageKey)
+    } else {
+      createInMemoryMoodStore()
+    }
+  }, [persistence, storageKey])
+
+  useEffect(() => {
     requestLocation()
   }, [])
 
@@ -87,10 +92,27 @@ export function MoodCapture({
         setLocationStatus('ready')
       },
       (err) => {
+        console.warn('Geolocation error:', err.code, err.message)
         lastError.current = err.message
         setLocationStatus('failed')
-        setToast('Failed to fetch location')
+        // Use default coordinates as fallback
+        setCoords(defaultCoords)
+
+        let errorMessage = 'Using default location (Paris)'
+        if (err.code === 1) {
+          errorMessage = 'Location permission denied - ' + errorMessage
+        } else if (err.code === 2) {
+          errorMessage = 'Position unavailable - ' + errorMessage
+        } else if (err.code === 3) {
+          errorMessage = 'Location timeout - ' + errorMessage
+        }
+        setToast(errorMessage)
         window.setTimeout(() => setToast(null), 3000)
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes cache
       },
     )
   }
@@ -130,6 +152,7 @@ export function MoodCapture({
           weatherSummary: weatherLabel(weather),
           weatherIcon: weather.icon,
           imageUrl: imageFileDataUrl || imageUrl || undefined,
+          coords: [coords.lat, coords.lon],
         },
         storageKey,
       )

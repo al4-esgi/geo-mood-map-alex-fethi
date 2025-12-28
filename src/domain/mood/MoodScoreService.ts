@@ -3,9 +3,15 @@ import type { MoodScoreInput, WeatherSnapshot } from './types'
 export class MoodScoreService {
   static compute(input: MoodScoreInput): number {
     const base = clamp(input.rating * 20, 0, 100)
-    const sentimentDelta = textSentimentDelta(input.text, input.textSentimentScore)
+    const sentimentDelta = textSentimentDelta(
+      input.text,
+      input.textSentimentScore,
+    )
     const weatherDelta = weatherModifier(input.weather)
-    const imageDelta = imageModifier(input.imageSentimentScore)
+    const imageDelta = imageModifier(
+      input.imageSentiment,
+      input.imageSentimentScore,
+    )
     return clamp(base + sentimentDelta + weatherDelta + imageDelta, 0, 100)
   }
 }
@@ -43,12 +49,16 @@ function weatherModifier(weather?: WeatherSnapshot): number {
   return delta
 }
 
-function imageModifier(aiScore?: number): number {
+function imageModifier(
+  sentiment?: 'positive' | 'negative' | 'neutral',
+  aiScore?: number,
+): number {
   if (typeof aiScore === 'number') return clamp(aiScore, -1, 1) * 10
+  if (sentiment === 'positive') return 5
+  if (sentiment === 'negative') return -5
   return 0
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
-

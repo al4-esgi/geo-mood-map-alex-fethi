@@ -6,7 +6,7 @@ describe('provider adapters', () => {
   })
 
   it('maps weather response including icon', async () => {
-    vi.mock('../../services/weatherService', () => ({
+    vi.mock('../../src/services/weatherService', () => ({
       getWeatherByCoords: vi.fn().mockResolvedValue({
         condition: 'clouds',
         temperature: 15,
@@ -15,7 +15,8 @@ describe('provider adapters', () => {
         source: 'mock',
       }),
     }))
-    const { WeatherProviderImpl: Impl } = await import('../../infrastructure/providers/WeatherProviderImpl')
+    const { WeatherProviderImpl: Impl } =
+      await import('../../src/infrastructure/providers/WeatherProviderImpl')
     const provider = new Impl()
     const res = await provider.getByCoords({ lat: 1, lon: 2 })
     expect(res.icon).toBe('http://icon')
@@ -23,7 +24,7 @@ describe('provider adapters', () => {
   })
 
   it('maps geo response', async () => {
-    vi.mock('../../services/geolocationService', () => ({
+    vi.mock('../../src/services/geolocationService', () => ({
       getPlaceByCoords: vi.fn().mockResolvedValue({
         lat: 1,
         lon: 2,
@@ -32,7 +33,8 @@ describe('provider adapters', () => {
         source: 'mock',
       }),
     }))
-    const { GeoProviderImpl: Impl } = await import('../../infrastructure/providers/GeoProviderImpl')
+    const { GeoProviderImpl: Impl } =
+      await import('../../src/infrastructure/providers/GeoProviderImpl')
     const provider = new Impl()
     const res = await provider.getPlaceByCoords({ lat: 1, lon: 2 })
     expect(res.name).toBe('Place')
@@ -40,23 +42,24 @@ describe('provider adapters', () => {
   })
 
   it('delegates text sentiment to analyzer', async () => {
-    vi.mock('../../services/textAnalysisService', () => ({
+    vi.mock('../../src/services/textAnalysisService', () => ({
       analyzeText: vi.fn().mockResolvedValue({ score: 0.7, source: 'api' }),
     }))
-    const { TextSentimentProviderImpl: Impl } = await import('../../infrastructure/providers/TextSentimentProviderImpl')
+    const { TextSentimentProviderImpl: Impl } =
+      await import('../../src/infrastructure/providers/TextSentimentProviderImpl')
     const provider = new Impl()
     const res = await provider.analyze('hello')
     expect(res.score).toBe(0.7)
   })
 
   it('delegates image sentiment to analyzer', async () => {
-    vi.mock('../../services/visionService', () => ({
+    vi.mock('../../src/services/visionService', () => ({
       analyzeImage: vi.fn().mockResolvedValue({ score: 0.4, source: 'api' }),
     }))
-    const { ImageSentimentProviderImpl: Impl } = await import('../../infrastructure/providers/ImageSentimentProviderImpl')
+    const { ImageSentimentProviderImpl: Impl } =
+      await import('../../src/infrastructure/providers/ImageSentimentProviderImpl')
     const provider = new Impl()
     const res = await provider.analyze('data:image/png;base64,test')
     expect(res.score).toBe(0.4)
   })
 })
-

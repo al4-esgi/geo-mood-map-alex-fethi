@@ -1,88 +1,11 @@
-export type WeatherSnapshot = {
-  condition: 'sun' | 'clouds' | 'rain' | 'snow' | 'clear'
-  temperature: number
-  humidity?: number
-}
+import { MoodScoreService } from '../domain/mood/MoodScoreService'
+import type { MoodScoreInput } from '../domain/mood/types'
 
-export type ImageSentiment = 'positive' | 'negative' | 'neutral'
-
-export type MoodScoreInput = {
-  rating: number // 1–5 user rating
-  text?: string
-  weather?: WeatherSnapshot
-  imageSentiment?: ImageSentiment
-  textSentimentScore?: number // -1..1 from NLP
-  imageSentimentScore?: number // -1..1 from Vision
-}
+export type { MoodScoreInput }
 
 /**
- * Computes a mood score (0–100) from user input, weather, and sentiment cues.
+ * Compatibility wrapper used by UI/tests; delegates to the single domain service.
  */
 export function computeMoodScore(input: MoodScoreInput): number {
-  const base = clamp(input.rating * 20, 0, 100)
-
-  const sentimentDelta = textSentimentDelta(
-    input.text,
-    input.textSentimentScore,
-  )
-  const weatherDelta = weatherModifier(input.weather)
-  const imageDelta = imageModifier(
-    input.imageSentiment,
-    input.imageSentimentScore,
-  )
-
-  return clamp(base + sentimentDelta + weatherDelta + imageDelta, 0, 100)
-}
-
-function textSentimentDelta(text?: string, aiScore?: number): number {
-  if (typeof aiScore === 'number') {
-    return clamp(aiScore, -1, 1) * 20
-  }
-  if (!text) return 0
-  const lower = text.toLowerCase()
-  const positives = ['happy', 'joy', 'joyful', 'calm', 'peaceful']
-  const negatives = ['sad', 'angry', 'mad', 'upset', 'anxious']
-
-  const hasPositive = positives.some((word) => lower.includes(word))
-  const hasNegative = negatives.some((word) => lower.includes(word))
-
-  if (hasPositive && !hasNegative) return 10
-  if (hasNegative && !hasPositive) return -10
-  if (hasPositive && hasNegative) return 0
-  return 0
-}
-
-function weatherModifier(weather?: WeatherSnapshot): number {
-  if (!weather) return 0
-  let delta = 0
-
-  const isRainy = weather.condition === 'rain'
-  const isCold = weather.temperature < 8
-  const isHeatWave = weather.temperature > 32
-  const isPleasantSun =
-    (weather.condition === 'sun' || weather.condition === 'clear') &&
-    weather.temperature >= 18 &&
-    weather.temperature <= 28
-  const isHumid = typeof weather.humidity === 'number' && weather.humidity > 85
-
-  if (isRainy) delta -= 20
-  if (isCold) delta -= 10
-  if (isHeatWave) delta -= 10
-  if (isPleasantSun) delta += 5
-  if (isHumid) delta -= 5
-
-  return delta
-}
-
-function imageModifier(sentiment?: ImageSentiment, aiScore?: number): number {
-  if (typeof aiScore === 'number') {
-    return clamp(aiScore, -1, 1) * 10
-  }
-  if (sentiment === 'positive') return 5
-  if (sentiment === 'negative') return -5
-  return 0
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value))
+  return MoodScoreService.compute(input)
 }

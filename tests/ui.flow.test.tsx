@@ -2,10 +2,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { act } from 'react'
-import { MoodCapture } from '../presentation/MoodCapture'
-import * as geoService from '../services/geolocationService'
-import * as weatherService from '../services/weatherService'
-import { loadMoods, moodStore } from '../state/moodStore'
+import { MoodCapture } from '../src/presentation/MoodCapture'
+import * as geoService from '../src/services/geolocationService'
+import * as weatherService from '../src/services/weatherService'
+import { loadMoods, moodStore } from '../src/state/moodStore'
 
 describe('MoodCapture UI flow', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { getPlaceByCoords } from '../services/geolocationService'
+import { getPlaceByCoords } from '../src/services/geolocationService'
 
 describe('geolocationService', () => {
   it('falls back to mock when fetch is not mocked in test env', async () => {

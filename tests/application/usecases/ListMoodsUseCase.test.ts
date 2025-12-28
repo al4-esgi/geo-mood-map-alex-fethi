@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { FakeMoodRepository } from '../fakes/FakeMoodRepository'
-import { ListMoodsUseCase } from './ListMoodsUseCase'
+import { FakeMoodRepository } from '../../../src/application/fakes/FakeMoodRepository'
+import { ListMoodsUseCase } from '../../../src/application/usecases/ListMoodsUseCase'
 
 describe('ListMoodsUseCase', () => {
   it('returns moods from repository', async () => {
@@ -29,4 +29,3 @@ describe('ListMoodsUseCase', () => {
     expect(list[1].text).toBe('b')
   })
 })
-

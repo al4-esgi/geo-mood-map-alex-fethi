@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { getWeatherByCoords } from '../services/weatherService'
+import { getWeatherByCoords } from '../src/services/weatherService'
 
 describe('weatherService', () => {
   it('falls back to mock when no API key', async () => {

@@ -43,7 +43,7 @@ export function createApiMoodStore(): MoodStore {
         coords:
           saved.latitude !== undefined && saved.longitude !== undefined
             ? [saved.latitude, saved.longitude]
-            : input.coords ?? [0, 0],
+            : (input.coords ?? [0, 0]),
         createdAt: new Date(saved.createdAt),
       }
     },

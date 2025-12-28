@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createLocalStorageMoodStore } from '../persistence/localStorageMoodStore'
-import type { MoodEntryInput } from '../persistence/inMemoryMoodStore'
+import { createLocalStorageMoodStore } from '../src/persistence/localStorageMoodStore'
+import type { MoodEntryInput } from '../src/persistence/inMemoryMoodStore'
 
 const sample: MoodEntryInput = {
   text: 'Stored mood',

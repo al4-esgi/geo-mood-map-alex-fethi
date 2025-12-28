@@ -1,6 +1,6 @@
 import { useStore } from '@tanstack/react-store'
 import { History, LocateFixed, Settings, SmilePlus } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { MapView } from '../components/custom/MapView'
 import { FloatingButton } from '../components/custom/buttons/FloatingButton'
@@ -40,16 +40,9 @@ export function MoodMapPage({
   persistence = 'localStorage',
   storageKey,
 }: MoodMapPageProps) {
-  useMemo(() => {
-    // Ensure persistence stores are initialized for each mode
-    if (persistence === 'localStorage')
-      return createLocalStorageMoodStore(storageKey)
-    if (persistence === 'api') return createApiMoodStore()
-    return createInMemoryMoodStore()
-  }, [persistence, storageKey])
-
   const entries = useStore(moodStore)
   const hydratedRef = useRef(false)
+  const storeInitRef = useRef(false)
 
   const [coords, setCoords] = useState<{ lat: number; lon: number }>(
     initialCoords,
@@ -73,6 +66,18 @@ export function MoodMapPage({
     loadMoods(persistence, storageKey).catch(() => {
       /* ignore hydration errors */
     })
+  }, [persistence, storageKey])
+
+  useEffect(() => {
+    if (storeInitRef.current) return
+    storeInitRef.current = true
+    if (persistence === 'localStorage') {
+      createLocalStorageMoodStore(storageKey)
+    } else if (persistence === 'api') {
+      createApiMoodStore()
+    } else {
+      createInMemoryMoodStore()
+    }
   }, [persistence, storageKey])
 
   useEffect(() => {

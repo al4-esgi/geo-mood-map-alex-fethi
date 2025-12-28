@@ -22,5 +22,5 @@ export type MoodScoreInput = {
   weather?: WeatherSnapshot
   textSentimentScore?: number // -1..1 from NLP
   imageSentimentScore?: number // -1..1 from Vision
+  imageSentiment?: 'positive' | 'negative' | 'neutral'
 }
-
